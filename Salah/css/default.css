@@ -1,8 +1,73 @@
 ﻿body {
-    overflow-y: scroll;
 }
 
-@media screen and (-ms-view-state: fullscreen-landscape) {
+#header {
+	margin-top: 45px;
+	margin-left: 120px;
+}
+
+#content {
+    background: black;
+	bottom: 120px;
+	position: absolute;
+    width: 100%;
+}
+
+#datesList {
+    -ms-scroll-snap-type: proximity;
+    
+	display: -ms-flexbox;
+	list-style: decimal;
+	margin: 0;
+	padding: 6px 0 10px 120px;
+	overflow-x: scroll;
+}
+
+#datesList > li {
+	display: -ms-flexbox;
+	-ms-flex-direction: column;
+}
+
+.salahList {
+	-ms-flex-direction: row;
+	
+	display: -ms-flexbox;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.dateStamp {
+	color: #999;
+	display: block;
+	font-size: 11pt;
+    font-weight: 600;
+    line-height: 1.3636;
+	padding-bottom: 7px;
+}
+
+.salahList > li {
+	background: rgba(255, 255, 255, 0.1);
+	padding: 13px 15px 20px 15px;
+	margin-right: 10px;
+}
+
+.salahList h1 {
+	margin-bottom: 13px;
+}
+
+.wipeable {    
+    transition: margin-right 0.5s ease, padding 1s ease, width 1s ease;
+    
+	/*transition-property: all;
+	transition-duration: 10s;
+	transition-timing-function: ease;*/
+    
+	overflow: hidden;
+	white-space: nowrap; /* Very important as it prevents text from wrapping */
+}
+
+/*@media screen and (-ms-view-state: fullscreen-landscape) {
 }
 
 @media screen and (-ms-view-state: filled) {
@@ -12,4 +77,4 @@
 }
 
 @media screen and (-ms-view-state: fullscreen-portrait) {
-}
+}*/
