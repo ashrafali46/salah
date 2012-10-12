@@ -1,0 +1,31 @@
+﻿#controls {
+    background: #333;
+    border: 1px solid #555;
+    display: inline-block;
+    margin: 20px;
+    padding: 35px;
+}
+
+.formSection {
+    margin: 0 0 20px 0;
+    padding: 0px;
+    border: 0px;
+}
+
+.twoColumnForm
+{
+    display: -ms-grid;
+    -ms-grid-columns: 50% 50%;
+    min-width: 640px;
+}
+
+.formSectionHeading {
+	font-family: "Segoe UI Light";
+	line-height: 32px;
+	font-size: 20pt;
+    margin: 0px 0px 35px 0px;
+}
+
+button {
+    margin-top: 20px;
+}

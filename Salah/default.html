@@ -1,0 +1,59 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Salah</title>
+
+    <!-- WinJS references -->
+    <link href="//Microsoft.WinJS.1.0.RC/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.1.0.RC/js/base.js"></script>
+    <script src="//Microsoft.WinJS.1.0.RC/js/ui.js"></script>
+
+    <!-- Salah references -->
+    <link href="/css/default.css" rel="stylesheet" />
+    <link href="/css/forms.css" rel="stylesheet" />
+    <script src="/js/default.js"></script>
+    <script src="/js/PrayerCalculator.js"></script>
+</head>
+<body>
+    <form id="controls">            
+        <fieldset class="formSection">
+            <legend class="formSectionHeading">Location</legend>
+            <div class="twoColumnForm">
+                <div style="-ms-grid-row: 1; -ms-grid-column: 1;"><label for="latitude">Latitude</label></div>
+                <div style="-ms-grid-row: 1; -ms-grid-column: 2;"><input id="latitude" type="number" /></div>
+                <div style="-ms-grid-row: 2; -ms-grid-column: 1;"><label for="longitude">Longitude</label></div>
+                <div style="-ms-grid-row: 2; -ms-grid-column: 2;"><input id="longitude" type="number" /></div>
+            </div>
+        </fieldset>
+        <h1 class="formSectionHeading">Date</h1>
+        <div class="twoColumnForm">
+            <div style="-ms-grid-row: 1; -ms-grid-column: 2;"><div id="date" data-win-control="WinJS.UI.DatePicker"></div></div>
+            <div style="-ms-grid-row: 2; -ms-grid-column: 2;"><button id="addButton">Add Times</button></div>
+        </div>
+        <div id="ratingControlHost" data-win-control="WinJS.UI.Rating">
+        </div>
+    </form>
+    <div id="timepicker" data-win-control="WinJS.UI.TimePicker" 
+    data-win-options="{current: '10:29 am'}">
+</div>
+    <button id="diffButton">Add Times</button>
+
+    <ol id="datesList">
+
+    </ol>
+        <!--
+            <ol id="datesList">
+                <li id="today" class="dateList">
+                    <h1 class="datestamp"> ... date </h1>
+                    <ol class="salahList">
+                        ... salahs              
+                    </ol>
+                </li>
+            </ol>
+
+            outer list which is for each day, the scrolling snaps to the boundaries of these lists.
+            the inner list on this is the list of prayers
+        -->
+</body>
+</html>
