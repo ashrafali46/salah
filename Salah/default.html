@@ -13,17 +13,19 @@
     <link href="/css/default.css" rel="stylesheet" />
     <link href="/css/forms.css" rel="stylesheet" />
     <script src="/js/default.js"></script>
+    <script src="/js/moment.js"></script>
     <script src="/js/PrayerCalculator.js"></script>
 </head>
 <body>
-    <form id="controls">            
+    <!-- placing the button inside a form causes WinJS controls to be destroyed on button click -->
+    <!--<div id="controls">            
         <fieldset class="formSection">
             <legend class="formSectionHeading">Location</legend>
             <div class="twoColumnForm">
                 <div style="-ms-grid-row: 1; -ms-grid-column: 1;"><label for="latitude">Latitude</label></div>
-                <div style="-ms-grid-row: 1; -ms-grid-column: 2;"><input id="latitude" type="number" /></div>
+                <div style="-ms-grid-row: 1; -ms-grid-column: 2;"><input id="latitude" type="number" value="-43.44" /></div>
                 <div style="-ms-grid-row: 2; -ms-grid-column: 1;"><label for="longitude">Longitude</label></div>
-                <div style="-ms-grid-row: 2; -ms-grid-column: 2;"><input id="longitude" type="number" /></div>
+                <div style="-ms-grid-row: 2; -ms-grid-column: 2;"><input id="longitude" type="number" value="-80.31" /></div>
             </div>
         </fieldset>
         <h1 class="formSectionHeading">Date</h1>
@@ -31,21 +33,15 @@
             <div style="-ms-grid-row: 1; -ms-grid-column: 2;"><div id="date" data-win-control="WinJS.UI.DatePicker"></div></div>
             <div style="-ms-grid-row: 2; -ms-grid-column: 2;"><button id="addButton">Add Times</button></div>
         </div>
-        <div id="ratingControlHost" data-win-control="WinJS.UI.Rating">
-        </div>
-    </form>
-    <div id="timepicker" data-win-control="WinJS.UI.TimePicker" 
-    data-win-options="{current: '10:29 am'}">
-</div>
-    <button id="diffButton">Add Times</button>
+    </div>-->
 
     <ol id="datesList">
 
     </ol>
         <!--
             <ol id="datesList">
-                <li id="today" class="dateList">
-                    <h1 class="datestamp"> ... date </h1>
+                <li id="today" class="date">
+                    <h1 class="dateStamp"> ... date </h1>
                     <ol class="salahList">
                         ... salahs              
                     </ol>
