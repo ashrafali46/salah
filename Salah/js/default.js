@@ -33,18 +33,26 @@
             var method = PrayerCalculator.Methods.ISNA;
             prayerCalculator = new PrayerCalculator(location, method);
 
+            var yesterday = moment().add('d', -1);
             var now = moment();
             WinJS.Utilities.ready(function () {
-                addSalahTimes(now.add('d', -1).toDate());
-                addSalahTimes(now.add('d', 1).toDate());
-				addSalahTimes(now.add('d', 1).toDate());
-				addSalahTimes(now.add('d', 1).toDate());
-				addSalahTimes(now.add('d', 1).toDate());
-				addSalahTimes(now.add('d', 1).toDate());
-				addSalahTimes(now.add('d', 1).toDate());
-				addSalahTimes(now.add('d', 1).toDate());
-				removeExpiredAsync(true);
-				setSnapPoints();
+                addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
+                addSalahTimes(now.toDate());
+
+                // remove salah that have already expired
+                removeExpiredAsync(false).then(function () {
+                    // fill datesList with days so that salah times overflow the screen width
+                    var datesList = document.getElementById("datesList");
+                    var dateIter = now.clone();
+                    while (datesList.scrollWidth <= datesList.offsetWidth) {
+                        addSalahTimes(dateIter.add('d', 1).toDate());
+                    }
+
+                    setSnapPoints();
+
+                    datesList.addEventListener("scroll", datesListScrollHandler);
+				});
+
                 complete();
 
                 /*  if using large background images... which take some time to load change to:
@@ -75,12 +83,32 @@
         var prayerDate = document.createElement("li");
         datesList.appendChild(prayerDate);
         prayerDate.id = date.toLocaleDateString(); // can use getTime() which imposes a strict order on the ids
+        prayerDate.date = date;
         prayerDate.className = "date";
 
         var dateStamp = document.createElement("label");
         prayerDate.appendChild(dateStamp);
         dateStamp.className = "dateStamp";
-        dateStamp.innerText = moment(date).format("MMM Do");
+        var now = moment();
+        var dateMoment = moment(date);
+
+        // TODO: Add functionality to update dateStrings when days pass
+        var dateString;
+        switch (dateMoment.diff(now, 'days')) {
+            /*case -1:
+                dateString = "Yesterday";
+                break;
+            case 0:
+                dateString = "Today";
+                break;
+            case 1:
+                dateString = "Tomorrow";
+                break;*/
+            default:
+                dateString = dateMoment.format("MMMM Do");
+                break;
+        }
+        dateStamp.innerText = dateString;
 
         var timesList = document.createElement("ol");
         prayerDate.appendChild(timesList);
@@ -118,7 +146,7 @@
 
             var salahName = document.createElement("h1");
             salahEl.appendChild(salahName);
-            salahName.innerText = time;
+            salahName.innerText = time.charAt(0).toUpperCase() + time.substring(1);
 
             var salahTime = document.createElement("h2");
             salahEl.appendChild(salahTime);
@@ -222,15 +250,15 @@
         /* clientWidth (and outerWidth, scrollWidth) return imprecise/rounded values (e.g. 39px) while getBoundingClientRect().width is
            the actual floating point value (39.399347px), but these both include padding and in practice don't work.
            They caused the element to be sized smaller than it was actually was (hence inflating the element height with word wrap).
-           However the method used is window.getComputedStyle(li).width which is what works best, it doesn't include padding, 
+           However the method used is getComputedStyle(li).width which is what works best, it doesn't include padding, 
            just straight up width. */
-        var computedWidth = parseFloat(window.getComputedStyle(el).width);
+        var computedWidth = parseFloat(getComputedStyle(el).width);
 
         // for css width transitions to work, element must have a width set
         el.style.width = computedWidth + "px";
 
-        // css duration hard coded
-        // TODO: This variable is not used, but when I get rid of this statement the wipe animation breaks
+        // this variable is not used, but when I get rid of this statement the wipe animation breaks
+        // (might be due to the javascript bytecode optimizer)
         var duration = 1000 * parseFloat(el.currentStyle.msTransitionDuration); // milliseconds
 
         // wipe the element
@@ -245,17 +273,18 @@
             if (borderWidth != 0)
                 el.style.borderColor = "rgba(0, 0, 0, 0)"; // document.body.currentStyle.backgroundColor;
             el.style.marginRight = -1 * (borderWidth) + "px";
-        }, 500);
+        }, 700); // timeout values hard coded, matching CSS
 
         return new WinJS.Promise(function (complete, error, progress) {
             var DELAY = 100;
             setTimeout(function () {
                 el.parentNode.removeChild(el);
                 complete();
-            }, 1000 + DELAY);
+            }, 1400 + DELAY);
         });
     }
 
+    /* Sets the css snap points property for snap scrolling */
     function setSnapPoints() {
         var datesList = document.getElementById("datesList");
         var paddingLeft = parseFloat(datesList.currentStyle.paddingLeft);
@@ -266,6 +295,28 @@
         }
         datesList.style.msScrollSnapPointsX = "snapList(" + snapPoints.toString() + ")";
     }
+
+    /* Adds additional prayers when user scrolls to end of datesList */
+    function datesListScrollHandler(scrollEvent) {
+        // TODO implement custom scrolling (buttons, i'm thinking) for when user
+        // is using mouse input (not touch). This is because in the case when the user drags the scroll bar 
+        // to scroll, the list jerks (due to conflicting scrollLeft and mouse position) after adding some
+        // more prayer times
+        var datesList = document.getElementById("datesList");
+        console.log(datesList.scrollLeft + " " + datesList.scrollWidth);
+
+        // check if user has scrolled within THRESHOLD pixels of end
+        var endDistance = (datesList.scrollWidth - datesList.offsetWidth) - datesList.scrollLeft;
+        var THRESHOLD = 50;
+
+        if (endDistance < THRESHOLD) {
+            // add an additional date to the list
+            var lastDate = datesList.lastElementChild.date;
+            addSalahTimes(moment(lastDate).add('d', 1).toDate());
+            setSnapPoints(); // reset snap points
+        }
+    }
+
 
     function addButtonHandler(clickEvent) {
         console.log("Add button clicked.");

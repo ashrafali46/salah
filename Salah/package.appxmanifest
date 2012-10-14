@@ -1,48 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-
-  <Identity
-    Name="1135b709-7bc1-441f-9a3f-cc6e6f87d592"
-    Version="1.0.0.0"
-    Publisher="CN=Mahir" />
-
+  <Identity Name="1135b709-7bc1-441f-9a3f-cc6e6f87d592" Version="1.0.0.0" Publisher="CN=Mahir" />
   <Properties>
     <DisplayName>Salah</DisplayName>
     <PublisherDisplayName>Mahir</PublisherDisplayName>
     <Logo>images\storelogo.png</Logo>
   </Properties>
-
   <Prerequisites>
     <OSMinVersion>6.2.0</OSMinVersion>
     <OSMaxVersionTested>6.2.0</OSMaxVersionTested>
   </Prerequisites>
-
   <Resources>
     <Resource Language="x-generate" />
   </Resources>
-
   <Applications>
-    <Application 
-      Id="App"
-      StartPage="default.html">
-
-      <VisualElements
-        DisplayName="Salah"
-        Logo="images\logo.png"
-        SmallLogo="images\smalllogo.png"
-        Description="Salah"
-        ForegroundText="light"
-        BackgroundColor="#464646">
-
+    <Application Id="App" StartPage="default.html">
+      <VisualElements DisplayName="Salah" Logo="images\logo.png" SmallLogo="images\smalllogo.png" Description="Salah" ForegroundText="light" BackgroundColor="#07411e">
         <DefaultTile ShowName="allLogos" />
         <SplashScreen Image="images\splashscreen.png" />
-
       </VisualElements>
     </Application>
   </Applications>
-
   <Capabilities>
     <Capability Name="internetClient" />
   </Capabilities>
-
 </Package>

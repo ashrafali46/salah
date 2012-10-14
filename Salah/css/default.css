@@ -1,4 +1,5 @@
 ﻿body {
+    background-color: #07411e;
 }
 
 #header {
@@ -7,7 +8,7 @@
 }
 
 #content {
-    background: black;
+    /*background: black;*/
 	bottom: 120px;
 	position: absolute;
     width: 100%;
@@ -19,13 +20,15 @@
 	display: -ms-flexbox;
 	list-style: decimal;
 	margin: 0;
-	padding: 6px 0 10px 120px;
+	padding: 12px 0 15px 120px;
 	overflow-x: scroll;
 }
 
 #datesList > li {
-	display: -ms-flexbox;
 	-ms-flex-direction: column;
+    
+	display: -ms-flexbox;
+    margin-right: 20px;
 }
 
 .salahList {
@@ -38,7 +41,7 @@
 }
 
 .dateStamp {
-	color: #999;
+	color: rgba(255, 255, 255, 0.8);
 	display: block;
 	font-size: 11pt;
     font-weight: 600;
@@ -48,8 +51,9 @@
 
 .salahList > li {
 	background: rgba(255, 255, 255, 0.1);
-	padding: 13px 15px 20px 15px;
-	margin-right: 10px;
+	/*padding: 13px 15px 20px 15px;*/
+    padding: 25px 35px;
+	margin-right: 20px;
 }
 
 .salahList h1 {
@@ -57,12 +61,7 @@
 }
 
 .wipeable {    
-    transition: margin-right 0.5s ease, padding 1s ease, width 1s ease;
-    
-	/*transition-property: all;
-	transition-duration: 10s;
-	transition-timing-function: ease;*/
-    
+    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
 }
