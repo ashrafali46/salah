@@ -4,13 +4,16 @@
     "use strict";
     
     var prayerCalculator;
+    var updateInterval;
+
     // check for first run etc...
 
     var app = WinJS.Application;
     app.addEventListener("activated", activatedHandler, false);
     app.start();
 
-
+    /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively
+       when the promise set with eventArgs.setPromise() completes */
     function activatedHandler(eventArgs) {
         var activation = Windows.ApplicationModel.Activation;
         console.log("App activation.");
@@ -18,51 +21,53 @@
             // Regardless of launch type, I will always want to display the same content (fresh salah times)
             console.log("App launched. Last state: " + eventArgs.detail.previousExecutionState);
             if (eventArgs.detail.previousExecutionState != activation.ApplicationExecutionState.running) {
+                // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser) 
+
+                var splash = eventArgs.detail.splashScreen;
+                splash.addEventListener("dismissed", function () {
+                    console.log("Splash screen dismissed.");
+                }, false);
+
+                var location = { latitude: 43.44, longitude: -80.31 };
+                var method = PrayerCalculator.Methods.ISNA;
+                prayerCalculator = new PrayerCalculator(location, method);
+
                 WinJS.Utilities.ready(function () {
                     // ensure DOM ready
-                    console.log("Attaching event handlers to controls");
+                    var datesList = document.getElementById("datesList");
+                    datesList.addEventListener("scroll", datesListScrollHandler);
+
+                    // begin adding prayers to the page
+                    var yesterday = moment().add('d', -1);
+                    var now = moment();
+                    addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
+                    addSalahTimes(now.toDate());
+
+                    // remove salah that have already expired
+                    console.log("Removing expired prayers.");
+                    eventArgs.setPromise(
+                        removeExpiredAsync(false).then(function () {
+                            console.log("Removed expired prayers");
+                            // fill datesList with days so that salah times overflow the screen width
+                            return fillDatesListAsync();
+                        }).then(function() {
+                            console.log("Filled datesList.");
+                            // page is loaded with enough prayers
+                            updateInterval = setInterval(updateDatesList, 5000);//60000);
+                            console.log("Completed init.");
+
+                            WinJS.UI.Animation.enterPage([document.getElementById("header"), document.getElementById("content")]);
+                        })
+                    );
+
+                    //console.log("Attaching event handlers to controls");
                     //document.getElementById("addButton").addEventListener("click", addButtonHandler);
+
+                    // eventArgs.setPromise defers tearing down the loading screen until the supplied promise is fulfilled.
+                    //eventArgs.setPromise(initAsync2());
                 }, false);
             }
         }
-
-        // eventArgs.setPromise defers tearing down the loading screen until the supplied promise is fulfilled.
-        eventArgs.setPromise(new WinJS.Promise(function (complete, error, progress) {
-            // create PrayerCalculator
-            var location = { latitude: 43.44, longitude: -80.31 };
-            var method = PrayerCalculator.Methods.ISNA;
-            prayerCalculator = new PrayerCalculator(location, method);
-
-            var yesterday = moment().add('d', -1);
-            var now = moment();
-            WinJS.Utilities.ready(function () {
-                addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
-                addSalahTimes(now.toDate());
-
-                // remove salah that have already expired
-                removeExpiredAsync(false).then(function () {
-                    // fill datesList with days so that salah times overflow the screen width
-                    var datesList = document.getElementById("datesList");
-                    var dateIter = now.clone();
-                    while (datesList.scrollWidth <= datesList.offsetWidth) {
-                        addSalahTimes(dateIter.add('d', 1).toDate());
-                    }
-
-                    setSnapPoints();
-
-                    datesList.addEventListener("scroll", datesListScrollHandler);
-				});
-
-                complete();
-
-                /*  if using large background images... which take some time to load change to:
-                    var bgImage = document.getElementById("bgImage"); // refers to the empty image tag
-                    bgImage.addEventListener("load", function() { complete() });
-                    bgImage.src = // path to background;
-                });*/
-            });
-
-        }));
     }
 
     function addSalahTimes(date, animate) {
@@ -151,6 +156,8 @@
             var salahTime = document.createElement("h2");
             salahEl.appendChild(salahTime);
             salahTime.innerText = moment(times[time]).format("h:mm a");
+            // ensure salahTime has a width set (for proper first animation)
+            salahTime.style.width = getComputedStyle(salahTime).width;
         }
     }
 
@@ -178,7 +185,7 @@
                 if (salah.expiry.getTime() < Date.now()) {
                     expiredSalahs.push(salah);
                 } else {
-                    console.log(salah.firstElementChild.innerText + " is current/next prayer");
+                    //console.log(salah.firstElementChild.innerText + " is current/next prayer");
                     freshSalah = true;
                     break;
                 }
@@ -186,7 +193,7 @@
 
             // check if all salahs on this date have expired (i.e. we have not found a fresh salah)
             if (freshSalah == false) {
-                console.log(date.firstElementChild.innerText + " is empty.");
+                //console.log(date.firstElementChild.innerText + " is empty.");
                 expiredDates.push(date);
             }
 
@@ -303,7 +310,6 @@
         // to scroll, the list jerks (due to conflicting scrollLeft and mouse position) after adding some
         // more prayer times
         var datesList = document.getElementById("datesList");
-        console.log(datesList.scrollLeft + " " + datesList.scrollWidth);
 
         // check if user has scrolled within THRESHOLD pixels of end
         var endDistance = (datesList.scrollWidth - datesList.offsetWidth) - datesList.scrollLeft;
@@ -317,13 +323,112 @@
         }
     }
 
+    function fillDatesListAsync() {
+        return new WinJS.Promise(function (complete, error, progress) {
+            var datesList = document.getElementById("datesList");
+            if (datesList.getElementsByTagName("li").length == 0) {
+                addSalahTimes(new Date());
+                removeExpiredAsync(false).then(fillExtraSpace);
+            } else {
+                fillExtraSpace();
+            }
 
-    function addButtonHandler(clickEvent) {
-        console.log("Add button clicked.");
+            function fillExtraSpace() {
+                while (datesList.scrollWidth <= datesList.offsetWidth) {
+                    var lastDate = datesList.lastElementChild;
+                    addSalahTimes(moment(lastDate.date).add('d', 1).toDate());
+                }
+                complete();
+            }
+        });
     }
 
-    function checkForExpiry() {
-        // period check (every 1 minute) to check if a prayer time has passed 
-        // or a new day needs to be loaded
+    // TODO make this async?
+    /* Updates the datesList */
+    function updateDatesList() {
+        console.log("Updating list");
+        removeExpiredAsync(true).then(function () {
+            var current = getCurrentPrayer();
+            if (current) {
+                updateCurrentAsync().then(function () {
+                    // fill the datesList
+                    return fillDatesListAsync();
+                }).then(setSnapPoints);
+            }
+        });
+
+        /* If a prayer is current this updates it:
+                - Adds and updates the progress bar 
+                - Updates the time text (animating it)
+           Return a promise that completes when the current list element reaches its final width value
+        */
+        function updateCurrentAsync() {
+            var current = getCurrentPrayer();
+            current.className = "current";
+            var timeDiff = moment(current.expiry).fromNow(true);
+            var animPromise = updateSalahTimeAsync(timeDiff.charAt(0).toUpperCase() + timeDiff.substring(1) + " remaining");
+               
+            // update progress bar
+            getProgressBar().value = Date.now() - current.time.getTime();
+            return animPromise;
+        }
+
+        /* Returns the HTMLElement that is the current prayer, assumes no expired prayers in datesList */
+        function getCurrentPrayer() {
+            var now = new Date();
+
+            var datesList = document.getElementById("datesList");
+
+            // check if a prayer is current
+            // note there is not necessarily always a current prayer (think about time after sunrise and before dhuhr)
+            var candidate = datesList.firstElementChild.getElementsByClassName("salahList")[0].firstElementChild;
+            if (candidate.time < now) {
+                return candidate;
+            }
+
+            return null;
+        }
+
+        function updateSalahTimeAsync(text) {
+            var current = getCurrentPrayer();
+            var salahTime = current.getElementsByTagName("h2")[0];
+
+            // use a hidden element to measure what the actual length of the text would be
+            var hidden = document.createElement(salahTime.tagName);
+            current.appendChild(hidden);
+            hidden.innerText = text;
+            hidden.style.display = "inline-block";
+            var hiddenWidth = getComputedStyle(hidden).width;
+            current.removeChild(hidden);
+
+            salahTime.style.width = hiddenWidth;
+            salahTime.innerText = text;
+
+            return new WinJS.Promise(function (complete, error, progress) {
+                var animDuration = parseFloat(salahTime.currentStyle.msTransitionDuration) * 1000
+                setTimeout(complete, animDuration);
+            });
+        }
+
+        function getProgressBar() {
+            var current = getCurrentPrayer();
+            if (current) {
+                var progress = current.getElementsByTagName("progress")[0];
+                if (!progress) {
+                    // no progress bar, create it
+                    var container = document.createElement("div");
+                    container.className = "progressContainer";
+                    current.appendChild(container);
+                    progress = document.createElement("progress");
+                    container.appendChild(progress);
+                    // set the max property to the difference in milliseconds between the expiry time and start time
+                    progress.max = current.expiry.getTime() - current.time.getTime(); 
+                }
+
+                return progress;
+            }
+
+            return null;
+        }
     }
 })();

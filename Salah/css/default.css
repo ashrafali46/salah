@@ -9,7 +9,7 @@
 
 #content {
     /*background: black;*/
-	bottom: 120px;
+    bottom: 0px;
 	position: absolute;
     width: 100%;
 }
@@ -20,7 +20,7 @@
 	display: -ms-flexbox;
 	list-style: decimal;
 	margin: 0;
-	padding: 12px 0 15px 120px;
+	padding: 12px 0 135px 120px;
 	overflow-x: scroll;
 }
 
@@ -51,13 +51,37 @@
 
 .salahList > li {
 	background: rgba(255, 255, 255, 0.1);
-	/*padding: 13px 15px 20px 15px;*/
-    padding: 25px 35px;
-	margin-right: 20px;
+	/*margin-right: 20px;*/
 }
 
 .salahList h1 {
-	margin-bottom: 13px;
+    padding: 15px 30px 0 30px;
+}
+
+.salahList h2 {
+    padding: 0 30px 25px 30px;
+}
+
+.current h2 {
+    display: block;
+    overflow: hidden;
+    padding-right: 0;
+    margin-right: 30px;
+    transition: width 0.4s ease;
+    white-space: nowrap;
+}
+
+.progressContainer {
+    height: 0px;
+    overflow: visible;
+    position: relative;
+    top: -6px; /* progress height is 6px */
+}
+
+.progressContainer progress {
+    display: block;
+    vertical-align: text-bottom;
+    width: 100%;
 }
 
 .wipeable {    
