@@ -29,13 +29,14 @@
 	-ms-flex-direction: column;
     
 	display: -ms-flexbox;
-    opacity: 0.7;
-    margin-right: 20px;
+    /*opacity: 0.7;*/
+    /* do not set a margin on list items in the datesList, 
+       rather set it on the last salah child of a datesList list item*/
 }
 
-#datesList > li:first-child {
+/*#datesList > li:first-child {
     opacity: 1;
-}
+}*/
 
 .salahList {
 	-ms-flex-direction: row;
@@ -46,7 +47,7 @@
 	padding: 0;
 }
 
-.dateStamp {
+label.dateStamp {
 	color: rgba(255, 255, 255, 0.8);
 	display: block;
 	font-size: 11pt;
@@ -58,6 +59,10 @@
 .salahList > li {
 	background: rgba(255, 255, 255, 0.08);
 	margin-right: 2px;
+}
+
+.salahList > li:last-child {
+    margin-right: 20px;
 }
 
 .salahList h1 {

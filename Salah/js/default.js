@@ -5,6 +5,7 @@
     
     var prayerCalculator;
     var updateInterval;
+    var lastUpdateTime;
 
     // check for first run etc...
 
@@ -43,11 +44,9 @@
                     addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
                     addSalahTimes(now.toDate());
 
-                    // remove salah that have already expired
-                    console.log("Removing expired prayers.");
-
                     // eventArgs.setPromise defers tearing down the loading screen until the supplied promise is fulfilled.
                     eventArgs.setPromise(
+                        // remove salah that have already expired
                         removeExpiredAsync(false).then(function () {
                             console.log("Removed expired prayers");
                             // fill datesList with days so that salah times overflow the screen width
@@ -55,11 +54,11 @@
                         }).then(function() {
                             console.log("Filled datesList.");
                             // page is loaded with enough prayers
-                            var INITIAL_DELAY = 1900, INTERVAL = 20000;
+                            var INITIAL_DELAY = 1900, INTERVAL = 60000;
                             setTimeout(function () {
-                                updateDatesList();
+                                updateDatesListAsync();
                             }, INITIAL_DELAY);
-                            //updateInterval = setInterval(updateDatesList, INTERVAL);
+                            updateInterval = setInterval(updateDatesListAsync, INTERVAL);
 
                             WinJS.UI.Animation.enterPage(
                                 [[document.getElementById("header")], [document.getElementById("content")]],
@@ -74,6 +73,7 @@
         }
     }
 
+    // TODO make this animate/async
     function addSalahTimes(date, animate) {
         var times = prayerCalculator.calculateTimes(date);
         var time; // iterator
@@ -91,7 +91,9 @@
         var datesList = document.getElementById("datesList");
         var prayerDate = document.createElement("li");
         datesList.appendChild(prayerDate);
-        prayerDate.id = date.toLocaleDateString(); // can use getTime() which imposes a strict order on the ids
+        // could use getTime() which imposes a strict order on the ids
+        // except i'd need to make sure the hours/minutes/seconds/ and milliseconds were absent
+        prayerDate.id = date.toLocaleDateString(); 
         prayerDate.date = date;
         prayerDate.className = "date";
 
@@ -104,7 +106,7 @@
         // TODO: Add functionality to update dateStrings when days pass
         var dateString;
         switch (dateMoment.diff(now, 'days')) {
-            /*case -1:
+            case -1:
                 dateString = "Yesterday";
                 break;
             case 0:
@@ -112,7 +114,7 @@
                 break;
             case 1:
                 dateString = "Tomorrow";
-                break;*/
+                break;
             default:
                 dateString = dateMoment.format("MMMM Do");
                 break;
@@ -167,6 +169,8 @@
 
     /* Removes prayers that have expired, returns a promise that completes when the expired prayers are removed */
     function removeExpiredAsync(animate) {
+        console.log("Removing expired prayers.");
+
         // behavior: if coming back to the app (alt-tabbing/minimize maximize) after a long period
         // enumerate expired times: if 1 then swipe remove, more than 1 fast delete all
 
@@ -297,6 +301,7 @@
 
     /* Sets the css snap points property for snap scrolling */
     function setSnapPoints() {
+        console.log("Setting snapPoints.");
         var datesList = document.getElementById("datesList");
         var paddingLeft = parseFloat(datesList.currentStyle.paddingLeft);
         var els = datesList.getElementsByClassName("date");
@@ -330,6 +335,7 @@
     }
 
     function fillDatesListAsync() {
+        console.log("Filling the datesList.");
         return new WinJS.Promise(function (complete, error, progress) {
             var datesList = document.getElementById("datesList");
             if (datesList.getElementsByTagName("li").length == 0) {
@@ -342,27 +348,34 @@
             function fillExtraSpace() {
                 while (datesList.scrollWidth <= datesList.offsetWidth) {
                     var lastDate = datesList.lastElementChild;
-                    addSalahTimes(moment(lastDate.date).add('d', 1).toDate());
+                    addSalahTimes(moment(lastDate.date).add('d', 1).toDate(), true);
                 }
-                setSnapPoints();
                 complete();
             }
         });
     }
 
-    // TODO make this async
-    /* Updates the datesList */
-    function updateDatesList() {
-        console.log("Updating list");
-        removeExpiredAsync(true).then(function () {
+    /* Updates the datesList. Returns a Promise that is completed when the datesList has finished updating */
+    function updateDatesListAsync() {
+        console.log("Updating datesList:");
+        if (!lastUpdateTime)
+            lastUpdateTime = new Date();
+
+        return removeExpiredAsync(true).then(function () {
+            updateDateStamps();
+
             var current = getCurrentPrayer();
             if (current) {
-                updateCurrentAsync().then(function () {
-                    // fill the datesList so it overflows the screen (also ensuring it always contains 
-                    // the upcoming salah times)
-                    return fillDatesListAsync();
-                }).then(setSnapPoints);
+                return updateCurrentAsync();
             }
+        }).then(
+            // fill the datesList so it overflows the screen (also ensuring it always contains 
+            // the upcoming salah times)
+            fillDatesListAsync
+        ).then(function () {
+            setImmediate(setSnapPoints());
+            lastUpdateTime = new Date();
+            console.log("Finished updating the datesList.");
         });
 
         /* If a prayer is current this updates it:
@@ -371,6 +384,7 @@
            Return a promise that completes when the current list element reaches its final width value
         */
         function updateCurrentAsync() {
+            console.log("Updating current salah.");
             var current = getCurrentPrayer();
             current.className = "current";
             var timeDiff = moment(current.expiry).fromNow(true);
@@ -438,6 +452,45 @@
             }
 
             return null;
+        }
+
+        function updateDateStamps() {
+            console.log("Updating date titles.");
+            var now = new Date();
+
+            // check if we've transitioned to a new day
+            if (lastUpdateTime.toDateString() != now.toDateString()) {
+                var datesList = document.getElementById("datesList");
+                var yesterday = moment(now).subtract('d', 1).toDate();
+                var tomorrow = moment(now).add('d', 1).toDate();
+
+                var yesterdayEl = datesList.getElementById(yesterday.toLocaleDateString());
+                var todayEl = datesList.getElementById(now.toLocaleDateString());
+                var tomorrowEl = datesList.getElementById(tomorrow.toLocaleDateString());
+
+                if (yesterdayEl)
+                    replaceDateStamp(yesterdayEl, "Yesterday");
+
+                if (todayEl)
+                    replaceDateStamp(todayEl, "Today");
+
+                if (tomorrowEl)
+                    replaceDateStamp(tomorrowEl, "Tomorrow");
+            }
+
+            function replaceDateStamp(salahEl, text) {
+                var newStamp = document.createElement("label");
+                newStamp.className = "dateStamp";
+                newStamp.innerText = text;
+
+                var oldStamp = salahEl.firstElementChild;
+                newStamp.style.position = "absolute";
+                salahEl.insertBefore(newStamp, oldStamp);
+                WinJS.UI.Animation.crossFade(newStamp, oldStamp).then(function () {
+                    newStamp.style.position = "";
+                    salahEl.removeChild(oldStamp);
+                });
+            }
         }
     }
 })();
