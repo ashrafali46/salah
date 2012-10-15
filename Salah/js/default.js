@@ -45,6 +45,8 @@
 
                     // remove salah that have already expired
                     console.log("Removing expired prayers.");
+
+                    // eventArgs.setPromise defers tearing down the loading screen until the supplied promise is fulfilled.
                     eventArgs.setPromise(
                         removeExpiredAsync(false).then(function () {
                             console.log("Removed expired prayers");
@@ -53,18 +55,20 @@
                         }).then(function() {
                             console.log("Filled datesList.");
                             // page is loaded with enough prayers
-                            updateInterval = setInterval(updateDatesList, 5000);//60000);
-                            console.log("Completed init.");
+                            var INITIAL_DELAY = 1900, INTERVAL = 20000;
+                            setTimeout(function () {
+                                updateDatesList();
+                            }, INITIAL_DELAY);
+                            //updateInterval = setInterval(updateDatesList, INTERVAL);
 
-                            WinJS.UI.Animation.enterPage([document.getElementById("header"), document.getElementById("content")]);
+                            WinJS.UI.Animation.enterPage(
+                                [[document.getElementById("header")], [document.getElementById("content")]],
+                                [{ top: "0px", left: "30px" }, { top: "0px", left: "100px" }]
+                            );
+
+                            console.log("Completed init.");
                         })
                     );
-
-                    //console.log("Attaching event handlers to controls");
-                    //document.getElementById("addButton").addEventListener("click", addButtonHandler);
-
-                    // eventArgs.setPromise defers tearing down the loading screen until the supplied promise is fulfilled.
-                    //eventArgs.setPromise(initAsync2());
                 }, false);
             }
         }
@@ -120,7 +124,7 @@
         timesList.className = "salahList";
 
         for (time in times) {
-            if (time == "sunrise")
+            if (time == "sunrise" || time == "midnight")
                 continue;
 
             var salahEl = document.createElement("li");
@@ -142,7 +146,7 @@
                     expiry = times.isha;
                     break;
                 case 'isha':
-                    expiry = prayerCalculator.calculateTimes(moment(new Date(date)).add('d', 1).toDate()).fajr;
+                    expiry = times.midnight;
                     break;
             }
             salahEl.expiry = expiry;
@@ -313,13 +317,15 @@
 
         // check if user has scrolled within THRESHOLD pixels of end
         var endDistance = (datesList.scrollWidth - datesList.offsetWidth) - datesList.scrollLeft;
-        var THRESHOLD = 50;
+        var THRESHOLD = 30;
 
         if (endDistance < THRESHOLD) {
             // add an additional date to the list
-            var lastDate = datesList.lastElementChild.date;
-            addSalahTimes(moment(lastDate).add('d', 1).toDate());
-            setSnapPoints(); // reset snap points
+            setImmediate(function () {
+                var lastDate = datesList.lastElementChild.date;
+                addSalahTimes(moment(lastDate).add('d', 1).toDate());
+                setSnapPoints(); // reset snap points
+            });
         }
     }
 
@@ -338,12 +344,13 @@
                     var lastDate = datesList.lastElementChild;
                     addSalahTimes(moment(lastDate.date).add('d', 1).toDate());
                 }
+                setSnapPoints();
                 complete();
             }
         });
     }
 
-    // TODO make this async?
+    // TODO make this async
     /* Updates the datesList */
     function updateDatesList() {
         console.log("Updating list");
@@ -351,7 +358,8 @@
             var current = getCurrentPrayer();
             if (current) {
                 updateCurrentAsync().then(function () {
-                    // fill the datesList
+                    // fill the datesList so it overflows the screen (also ensuring it always contains 
+                    // the upcoming salah times)
                     return fillDatesListAsync();
                 }).then(setSnapPoints);
             }
@@ -422,7 +430,8 @@
                     progress = document.createElement("progress");
                     container.appendChild(progress);
                     // set the max property to the difference in milliseconds between the expiry time and start time
-                    progress.max = current.expiry.getTime() - current.time.getTime(); 
+                    progress.max = current.expiry.getTime() - current.time.getTime();
+                    WinJS.UI.Animation.fadeIn(progress);
                 }
 
                 return progress;

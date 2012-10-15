@@ -20,14 +20,15 @@
         var latRadians = this.location.latitude * factor;
         var solDec = this.getSolarDeclination(date);
         var solarNoon = this.getSolarNoon(date);
-        var times = {
-    };
+        var times = {};
         times.fajr = getAngleTime(this.parameters.fajrAngle * factor, date, true);
         times.sunrise = getAngleTime(-0.0145385927, date, true);
         times.dhuhr = solarNoon;
         times.asr = getAngleTime(Math.atan(1 / (1 + Math.tan(Math.abs(latRadians - solDec)))), date, false);
         times.maghrib = getAngleTime(this.parameters.maghribAngle * factor, date, false);
         times.isha = this.parameters.ishaAngle ? getAngleTime(this.parameters.ishaAngle * factor, date, false) : new Date(times.maghrib.getTime() + this.parameters.ishaOnsetTime * 60000);
+        var tomorrowFajr = getAngleTime(this.parameters.fajrAngle * factor, new Date(date.getTime() + 86400000), true);
+        times.midnight = new Date(times.maghrib.getTime() + 0.5 * (times.maghrib.getTime() - tomorrowFajr.getTime()));
         return times;
         function getAngleTime(angle, date, beforeNoon) {
             var timeOffset = Math.acos((Math.sin(angle) - Math.sin(latRadians) * Math.sin(solDec)) / (Math.cos(latRadians) * Math.cos(solDec))) / (15 * factor);
