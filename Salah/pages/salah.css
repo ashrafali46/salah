@@ -1,0 +1,92 @@
+﻿#datesListContainer {
+    bottom: 0;
+	position: absolute;
+    width: 100%;
+}
+
+#datesList {
+    -ms-scroll-snap-type: proximity;
+    -ms-scroll-translation: vertical-to-horizontal;
+    
+	display: -ms-flexbox;
+	list-style: none;
+	margin: 0;
+	padding: 50px 0 135px 120px;
+    overflow-x: scroll;
+}
+
+#datesList > li {
+	-ms-flex-direction: column;
+    
+	display: -ms-flexbox;
+    /*opacity: 0.7;*/
+    /* do not set a margin on list items in the datesList, 
+       rather set it on the last salah child of a datesList list item*/
+}
+
+/*#datesList > li:first-child {
+    opacity: 1;
+}*/
+
+.salahList {
+	-ms-flex-direction: row;
+	
+	display: -ms-flexbox;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+label.dateStamp {
+	color: rgba(255, 255, 255, 0.8);
+	display: block;
+	font-size: 11pt;
+    font-weight: 600;
+    line-height: 1.3636;
+	padding-bottom: 7px;
+}
+
+.salahList > li {
+	background: rgba(255, 255, 255, 0.08);
+	margin-right: 2px;
+}
+
+.salahList > li:last-child {
+    margin-right: 20px;
+}
+
+.salahList h1 {
+    padding: 15px 30px 0 30px;
+}
+
+.salahList h2 {
+    padding: 0 30px 25px 30px;
+}
+
+.current h2 {
+    display: block;
+    overflow: hidden;
+    padding-right: 0;
+    margin-right: 30px;
+    transition: width 0.4s ease;
+    white-space: nowrap;
+}
+
+.progressContainer {
+    height: 0px;
+    overflow: visible;
+    position: relative;
+    top: -6px; /* progress height is 6px */
+}
+
+.progressContainer progress {
+    display: block;
+    vertical-align: text-bottom;
+    width: 100%;
+}
+
+.wipeable {    
+    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;
+	overflow: hidden;
+	white-space: nowrap; /* Very important as it prevents text from wrapping */
+}

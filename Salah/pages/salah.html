@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <!-- WinJS references -->
+        <script src="//Microsoft.WinJS.1.0.RC/js/base.js"></script>
+        <script src="//Microsoft.WinJS.1.0.RC/js/ui.js"></script>
+
+        <!-- External libraries -->
+        <script src="/js/PrayerCalculator.js"></script>
+        <script src="/js/moment.js"></script>
+        
+        <script src="salah.js"></script>
+        <link href="salah.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!--
+            When populated the looks looks like: 
+            <ol id="datesList">
+                <li id="today" class="date">
+                    <label class="dateStamp"> ... date </label>
+                    <ol class="salahList">
+                        ... salahs              
+                    </ol>
+                </li>
+                ... more dates
+            </ol>
+        -->
+        <div id="datesListContainer">
+            <ol id="datesList">
+
+            </ol>
+        </div>
+    </body>
+</html>
