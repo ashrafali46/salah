@@ -1,5 +1,6 @@
 ﻿// For an introduction to the Blank template, see the following documentation:
 // http://go.microsoft.com/fwlink/?LinkId=232509
+
 (function () {
     "use strict";
     
@@ -7,68 +8,102 @@
     var updateInterval;
     var lastUpdateTime;
 
-    // check for first run etc...
+    var uiSetupCompletedCallback;
+    var uiSetupCompletePromise = new WinJS.Promise(function (complete, error, progress) {
+        uiSetupCompletedCallback = complete;
+    });
+
+    // Regardless of activation/launch type, I will always want to display the same content (fresh salah times)
+    WinJS.Utilities.ready(function () { setupUI(uiSetupCompletedCallback);});
 
     var app = WinJS.Application;
-    app.addEventListener("activated", activatedHandler, false);
+    app.addEventListener("activated", activatedHandler);
     app.start();
 
-    /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively
-       when the promise set with eventArgs.setPromise() completes */
+    function setupUI(uiCompleteCallback) {
+        console.log("Setting up user interface");
+
+        var location = { latitude: 43.44, longitude: -80.31 };
+        var method = PrayerCalculator.Methods.ISNA;
+        prayerCalculator = new PrayerCalculator(location, method);
+
+        // ensure DOM ready
+        var datesList = document.getElementById("datesList");
+        datesList.addEventListener("scroll", datesListScrollHandler);
+
+        // begin adding prayers to the page
+        console.log("Adding yesterdays and todays salahs.");
+        var yesterday = moment().add('d', -1);
+        var now = moment();
+        addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
+        addSalahTimes(now.toDate());
+
+        removeExpiredAsync(false).then(function () {
+            console.log("Removed expired prayers.");
+            // fill datesList with days so that salah times overflow the screen width
+            return fillDatesListAsync();
+        }).then(function () {
+            console.log("Filled datesList.");
+
+            // page is loaded with enough prayers
+            var INTERVAL = 60000;
+            updateInterval = setInterval(updateDatesListAsync, INTERVAL);
+
+            var header = document.getElementById("header");
+            var content = document.getElementById("content");
+            header.style.opacity = 0;
+            content.style.opacity = 0;
+
+            console.log("Completed document UI setup.");
+            uiCompleteCallback();
+        });
+    }
+
+    
     function activatedHandler(eventArgs) {
         var activation = Windows.ApplicationModel.Activation;
         console.log("App activation.");
         if (eventArgs.detail.kind == activation.ActivationKind.launch) {
-            // Regardless of launch type, I will always want to display the same content (fresh salah times)
+            
             console.log("App launched. Last state: " + eventArgs.detail.previousExecutionState);
             if (eventArgs.detail.previousExecutionState != activation.ApplicationExecutionState.running) {
-                // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser) 
+                // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
+
+                /* Activation is exposed through the WinJS.Application.onactivated event. This event
+                   is fired after DOMContentLoaded completes if the app isn’t already running or isn’t suspended.
+                   Otherwise, the event is fired as soon as Windows needs to activate the app. */
+                // App activation comes after DOMContentLoaded, but just to make it explicitly clear, we'll
+                // set this.
+                eventArgs.setPromise(uiSetupCompletePromise);
 
                 var splash = eventArgs.detail.splashScreen;
+                /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively
+                   when the promise set with eventArgs.setPromise() completes */
                 splash.addEventListener("dismissed", function () {
+                    var header = document.getElementById("header");
+                    var content = document.getElementById("content");
+                    WinJS.UI.Animation.enterPage([[header], [content]], null).then(function () {
+                        var INITIAL_DELAY = 1800;
+                        //setTimeout(updateDatesListAsync, INITIAL_DELAY);
+                    });
+
                     console.log("Splash screen dismissed.");
-                }, false);
+                });
 
-                var location = { latitude: 43.44, longitude: -80.31 };
-                var method = PrayerCalculator.Methods.ISNA;
-                prayerCalculator = new PrayerCalculator(location, method);
+                // window visibilitychange listener used when the app is maximized/minimized*
+                // Right now if the user minimizes the app and comes back to it after some prayers have
+                // expired, the screenshot of the app windows 8 caches (to make resume time seem small)
+                // is stale, and when that image is replaced with the actually UI there differences are
+                // shown immediate (not smooth), causing a poor user experience.
+                // TODO: investigate the image windows uses to cache what your app's UI looked like when it
+                // was minimized, investigate updating UI only after the user resumes your app.
+                // *note windows suspends apps ~10 seconds after they have been minimized
+                // document.addEventListener("visibilitychanged", ... handler);
 
-                WinJS.Utilities.ready(function () {
-                    // ensure DOM ready
-                    var datesList = document.getElementById("datesList");
-                    datesList.addEventListener("scroll", datesListScrollHandler);
+                // Following resuming app guidelines (for refreshing stale content)
+                // http://msdn.microsoft.com/en-us/library/windows/apps/hh465114.aspx
+                //Windows.UI.WebUI.WebUIApplication.addEventListener("resuming", resumingHandler, false);
 
-                    // begin adding prayers to the page
-                    var yesterday = moment().add('d', -1);
-                    var now = moment();
-                    addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
-                    addSalahTimes(now.toDate());
-
-                    // eventArgs.setPromise defers tearing down the loading screen until the supplied promise is fulfilled.
-                    eventArgs.setPromise(
-                        // remove salah that have already expired
-                        removeExpiredAsync(false).then(function () {
-                            console.log("Removed expired prayers");
-                            // fill datesList with days so that salah times overflow the screen width
-                            return fillDatesListAsync();
-                        }).then(function() {
-                            console.log("Filled datesList.");
-                            // page is loaded with enough prayers
-                            var INITIAL_DELAY = 1900, INTERVAL = 60000;
-                            setTimeout(function () {
-                                updateDatesListAsync();
-                            }, INITIAL_DELAY);
-                            updateInterval = setInterval(updateDatesListAsync, INTERVAL);
-
-                            WinJS.UI.Animation.enterPage(
-                                [[document.getElementById("header")], [document.getElementById("content")]],
-                                [{ top: "0px", left: "30px" }, { top: "0px", left: "100px" }]
-                            );
-
-                            console.log("Completed init.");
-                        })
-                    );
-                }, false);
             }
         }
     }
@@ -243,18 +278,16 @@
                 });
             });
         } else {
-            return new WinJS.Promise(function (complete, error, progress) {
-                for (var s = 0; s < expiredSalahs.length; s++) {
-                    var expiredSalah = expiredSalahs[s];
-                    expiredSalah.parentNode.removeChild(expiredSalah);
-                }
+            for (var s = 0; s < expiredSalahs.length; s++) {
+                var expiredSalah = expiredSalahs[s];
+                expiredSalah.parentNode.removeChild(expiredSalah);
+            }
 
-                for (var e = 0; e < expiredDates.length; e++) {
-                    datesList.removeChild(expiredDates[e]);
-                }
+            for (var e = 0; e < expiredDates.length; e++) {
+                datesList.removeChild(expiredDates[e]);
+            }
 
-                complete();
-            });
+            return WinJS.Promise.as(null);
         }
     }
 
@@ -478,17 +511,18 @@
                     replaceDateStamp(tomorrowEl, "Tomorrow");
             }
 
-            function replaceDateStamp(salahEl, text) {
+            function replaceDateStamp(salah, text) {
+                /// <param name="salah" type="HTMLElement">The salah element for which to change the dateStamp</param>
                 var newStamp = document.createElement("label");
                 newStamp.className = "dateStamp";
                 newStamp.innerText = text;
 
-                var oldStamp = salahEl.firstElementChild;
+                var oldStamp = salah.firstElementChild;
                 newStamp.style.position = "absolute";
-                salahEl.insertBefore(newStamp, oldStamp);
+                salah.insertBefore(newStamp, oldStamp);
                 WinJS.UI.Animation.crossFade(newStamp, oldStamp).then(function () {
                     newStamp.style.position = "";
-                    salahEl.removeChild(oldStamp);
+                    salah.removeChild(oldStamp);
                 });
             }
         }
