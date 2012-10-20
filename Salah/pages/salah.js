@@ -1,5 +1,4 @@
-﻿/// <reference path="//Microsoft.WinJS.1.0.RC/js/ui.js" />
-(function () {
+﻿(function () {
     "use strict";
 
     WinJS.UI.Pages.define("/pages/salah.html", {

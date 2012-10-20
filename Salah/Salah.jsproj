@@ -36,6 +36,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>1135b709-7bc1-441f-9a3f-cc6e6f87d592</ProjectGuid>
+    <ExpressionBlendVersion>5.0.30514.0</ExpressionBlendVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).Default.props" />
@@ -50,8 +51,12 @@
     <AppxManifest Include="package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <Content Include="css\forms.css" />
     <Content Include="default.html" />
+    <Content Include="images\worldmap\map.scale-100.png" />
+    <Content Include="images\worldmap\map.scale-140.png" />
+    <Content Include="images\worldmap\map.scale-180.png" />
+    <Content Include="pages\initialRun.css" />
+    <Content Include="pages\initialRun.html" />
     <Content Include="pages\salah.html" />
     <Content Include="images\logo.scale-100.png" />
     <Content Include="images\logo.scale-140.png" />
@@ -66,6 +71,7 @@
     <Content Include="js\PrayerCalculator.js" />
     <Content Include="pages\salah.js" />
     <Content Include="pages\salah.css" />
+    <Content Include="pages\initialRun.js" />
     <None Include="Salah_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

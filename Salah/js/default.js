@@ -12,11 +12,12 @@
         console.log("DOM Ready.");
 
         controlHost = document.getElementById("content");
-        WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
+        WinJS.UI.Pages.render("pages/initialRun.html", controlHost);
+        /*WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
             datesContainer = controlHost.querySelector("#datesListContainer");
 
             // Opacity 0 so it fades in with the enterPage animation
-            datesContainer.style.opacity = 0;
+            //datesContainer.style.opacity = 0;
 
             var INTERVAL = 60000;
             setInterval(function () {
@@ -27,10 +28,10 @@
             setTimeout(function() {
                 salahControl.updateDatesListAsync();
             }, INITIAL_DELAY);
-        });
+        });*/
 
         header = document.getElementById("header");
-        header.style.opacity = 0;
+        //header.style.opacity = 0;
     });
 
     var app = WinJS.Application;
@@ -57,7 +58,11 @@
                 /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively
                    when the promise set with eventArgs.setPromise() completes */
                 splash.addEventListener("dismissed", function () {
-                    WinJS.UI.Animation.enterPage([[header], [datesContainer]], null);
+
+                    // TODO: try to make it so you can just animate the PageControl into view
+                    // (issue: position: absolute on the datesContainer messes with the enterPage animation when 
+                    //  running on the controlHost)
+                    //WinJS.UI.Animation.enterPage([[header], [datesContainer]], null);
 
                     console.log("Splash screen dismissed.");
                 });
