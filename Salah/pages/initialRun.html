@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <script src="//Microsoft.WinJS.1.0.RC/js/base.js"></script>
+        <script src="//Microsoft.WinJS.1.0.RC/js/ui.js"></script>
+
+        <script src="initialRun.js"></script>
+		<link href="initialRun.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- on first run we have 1 goal: get the user's location (by asking for auto/manual entry)
+            and informing them of how we're using INSA's parameters for calculating the prayer times.
+            as well as letting them choose a custom background
+            -->
+        <div id="settingsContainer">
+			<div id="bismillahContainer">
+				<h2>بسم الله الرحمن الرحيم</h2>
+			</div>
+            <!--<div id="locationSetting">
+				<div id="overlay"></div>
+				<div id="controls">
+					<h2>Where are you?</h2>
+					<p>Please enable your location to be obtained automatically or set it yourself.</p>
+					<div id="toggleLocationControl" 
+						data-win-control="WinJS.UI.ToggleSwitch" 
+						data-win-options="{title:'Obtain my location automatically', labelOff:'No', labelOn:'Yes'}">
+					</div>
+					<p>
+						<input name="location" placeholder="(e.g. Lahore, Pakistan)" type="text" />
+						<button>Set Location</button>
+					</p>
+				</div>
+			</div>-->
+
+            <div id="backgroundSetting">
+                <!-- todo: line up choose a background nicely -->
+                <h2>Choose a background</h2>
+
+            </div>
+
+        </div>
+    </body>
+</html>
