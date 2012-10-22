@@ -5,8 +5,8 @@
         <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
         <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
 
-        <script src="initialRun.js"></script>
-		<link href="initialRun.css" rel="stylesheet" />
+        <script src="settings.js"></script>
+		<link href="settings.css" rel="stylesheet" />
     </head>
     <body>
         <!-- on first run we have 1 goal: get the user's location (by asking for auto/manual entry)
@@ -14,9 +14,9 @@
             as well as letting them choose a custom background
             -->
         <div id="settingsContainer">
-			<div id="bismillahContainer">
+			<!--<div id="bismillahContainer">
 				<h2>بسم الله الرحمن الرحيم</h2>
-			</div>
+			</div>-->
             <div id="locationSetting">
                 <img id="mapImage" src="#" alt="World Map" />
                 <div id="marker">
@@ -25,9 +25,9 @@
                 </div>
 				<div id="overlay"></div>
 				<div id="controls">
-					<div style="display: -ms-grid; -ms-grid-columns: max-content max-content">
-						<h2 style="-ms-grid-row: 1; -ms-grid-column: 1;">Where are you?</h2>
-						<div style="-ms-grid-row: 1; -ms-grid-column: 2; display: -ms-flexbox; -ms-flex-direction: column; -ms-flex-align: end;">
+					<div style="display: -ms-grid; -ms-grid-columns: max-content 1fr">
+						<h2 id="controlsTitle">Where are you?</h2>
+						<div id="upButton">
 							<button class="win-upbutton"></button>
 						</div>
 					</div>

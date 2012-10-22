@@ -47,6 +47,7 @@
 	/*margin-left: 15px;*/
     opacity: 0;
 	position: absolute;
+    transition: opacity .4s linear;
 	left: 50%;
 }
 
@@ -87,11 +88,29 @@
 	z-index: 10;
 }
 
+#controlsTitle {
+	-ms-grid-row: 1;
+	-ms-grid-column: 1;
+}
+
+#upButton {
+	-ms-grid-row: 1;
+	-ms-grid-column: 2;
+	-ms-grid-row-align: end;
+	display: -ms-flexbox;
+	opacity: 0;
+	-ms-flex-direction: column;
+	-ms-flex-align: end;
+    transition: opacity .4s linear;
+}
+
 #controls p:last-child {
 	margin-bottom: 0;
 }
 
 .win-upbutton {
+    color: black;
+    border-color: black;
     display: inline-block;
     min-width: 0;
     min-height: 0;
@@ -101,16 +120,19 @@
     border-width: 2px;
     border-style: solid;
     padding: 0;
+    position: relative;
     text-align: center;
 
+    top: -80px;
     /* Normal sizing. */
     width: 30px;
     height: 30px;
-    font-size: 16pt;
+    font-size: 20pt;
     line-height: 30px; /* line-height must match the content box height. */
     vertical-align: baseline;
 }
 .win-upbutton:hover, .win-upbutton:hover:active {
+    border-color: black;
     border-width: 2px;
     border-style: solid;
     border-radius: 50%;
@@ -121,7 +143,7 @@
     content: "\E0E4";
 	vertical-align: top;
 	position: relative;
-	top: -3px;
+	top: -4px;
 }
 .win-upbutton:disabled, .win-upbutton:disabled:active {
     visibility: hidden;

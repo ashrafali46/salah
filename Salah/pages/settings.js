@@ -2,7 +2,7 @@
 (function () {
     "use strict";
     
-    WinJS.UI.Pages.define("/pages/initialRun.html", {
+    WinJS.UI.Pages.define("/pages/settings.html", {
         render: function (element, options, loadResult) {
             element.appendChild(loadResult);
 
@@ -20,7 +20,7 @@
                         complete();
                     }, 100);
                 });
-                mapImage.src = "/images/worldmap/map-altered.png";
+                mapImage.src = "/images/worldmap/map-altered2.png";
             });
         },
 
@@ -33,6 +33,9 @@
             /// <var name="toggleElementControl" type="WinJS.UI.ToggleSwitch" />
             this.toggleControl = element.querySelector("#toggleLocationControl").winControl;
             this.toggleControl.addEventListener("change", this.handleAutoLocToggle.bind(this));
+
+            this.upButton = element.querySelector("#upButton");
+            this.upButton.addEventListener("click", this.showLocationControls.bind(this));
         },
 
         handleAutoLocToggle: function (event) {
@@ -43,7 +46,13 @@
 
             if (!enabled) {
                 this.request && this.request.cancel();
+
+                that.element.querySelector("#civicLocation").disabled = false;
+                that.element.querySelector("#locationSubmitButton").disabled = false;
                 return;
+            } else {
+                this.element.querySelector("#civicLocation").disabled = true;
+                this.element.querySelector("#locationSubmitButton").disabled = true;
             }
 
             if (!this.geolocator) {
@@ -124,6 +133,9 @@
                 if (that.toggleControl.checked) {
                     setTimeout(function () {
                         that.toggleControl.checked = false;
+
+                        that.element.querySelector("#civicLocation").disabled = false;
+                        that.element.querySelector("#locationSubmitButton").disabled = false;
                     }, 200);
                 }
             }
@@ -144,25 +156,45 @@
                 "&lon=" + location.coordinate.longitude + "&zoom=10";
 
             // make a reverseGeoCode request with the latitude and longitude, when that's complete show a tooltip in the center
-            var geoCodePromise = WinJS.xhr({
+            var TIMEOUT = 2500;
+            var geoCodePromise = WinJS.Promise.timeout(TIMEOUT, WinJS.xhr({
                 url: geocodeRequestURI,
                 headers: { "User-Agent": "SalahApp/1.0 (Windows 8; email:bayvakoof@live.com)" }
-            }).then(function result(xhr) {
+            }).then(
+            function result(xhr) {
                 var responseJSON = JSON.parse(xhr.responseText);
                 return responseJSON;
-            });
+            },
+            function error(e) {
+                return null;
+            }));
 
             WinJS.Promise.join({ anim: animationPromise, geocode: geoCodePromise }).then(function (result) {
-                var address = result.geocode.address;
-                var formattedAddress = "";
-                formattedAddress += address.city;
-                formattedAddress += (address.state != "") && (", " + address.state);
-                formattedAddress += ", " + address.country;
+                if (result.geocode) {
+                    var address = result.geocode.address;
+                    var formattedAddress = "";
+                    formattedAddress += address.city;
+                    formattedAddress += (address.state != "") && (", " + address.state);
+                    formattedAddress += ", " + address.country;
 
-                // display a marker
-                var marker = that.element.querySelector("#marker");
-                marker.querySelector("h3").innerText = formattedAddress;
-                WinJS.UI.Animation.fadeIn(marker);
+                    // display a marker
+                    var marker = that.element.querySelector("#marker");
+                    marker.querySelector("h3").innerText = formattedAddress;
+                    marker.style.opacity = "1";
+                } else {
+                    var marker = that.element.querySelector("#marker");
+                    var latDegrees = Math.abs(location.coordinate.latitude);
+                    var latMinutes = 60 * (latDegrees - Math.floor(latDegrees));
+                    var latSeconds = 60 * (latMinutes - Math.floor(latMinutes));
+                    var latString =  latDegrees.toFixed(0) + "°" + latMinutes.toFixed(0) + "'" + latSeconds.toFixed(0) + "\"" + (location.coordinate.latitude < 0 ? "S" : "N");
+
+                    var lonDegrees = Math.abs(location.coordinate.longitude);
+                    var lonMinutes = 60 * (lonDegrees - Math.floor(lonDegrees));
+                    var lonSeconds = 60 * (lonMinutes - Math.floor(lonMinutes));
+                    var lonString = lonDegrees.toFixed(0) + "°" + lonMinutes.toFixed(0) + "'" + lonSeconds.toFixed(0) + "\"" + (location.coordinate.longitude < 0 ? "W" : "E");;
+                    marker.querySelector("h3").innerText = "Your location: " + latString + " " + lonString;
+                    marker.style.opacity = "1";
+                }
             });
 
             // set the location setting
@@ -208,7 +240,10 @@
             var dimmer = this.element.querySelector("#overlay");
             var controls = this.element.querySelector("#controls");
             dimmer.style.opacity = 0;
-            controls.style.top = "59%";
+            controls.style.top = ((this.element.clientHeight - controls.offsetHeight) * 0.5 + controls.offsetHeight) + "px";
+
+            var upButton = this.element.querySelector("#upButton");
+            upButton.style.opacity = 1;
         },
 
         showLocationControls: function() {
@@ -216,6 +251,12 @@
             var controls = this.element.querySelector("#controls");
             dimmer.style.opacity = "0.8";
             controls.style.top = "0";
+
+            var upButton = this.element.querySelector("#upButton");
+            upButton.style.opacity = 0;
+
+            var marker = this.element.querySelector("#marker");
+            marker.style.opacity = "0";
         }
     });
 

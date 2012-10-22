@@ -14,7 +14,7 @@
         console.log("DOM Ready.");
 
         controlHost = document.getElementById("content");
-        pageRendered = WinJS.UI.Pages.render("pages/initialRun.html", controlHost);
+        pageRendered = WinJS.UI.Pages.render("pages/settings.html", controlHost);
         /*WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
             datesContainer = controlHost.querySelector("#datesListContainer");
 
