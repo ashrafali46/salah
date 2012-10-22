@@ -5,6 +5,8 @@
     "use strict";
 
     var header, controlHost, datesContainer;
+    var pageRendered;
+
     
     // Regardless of activation/launch type, I will always want to display the same content (fresh salah times)
     //WinJS.Utilities.ready(function () { setupUI(uiSetupCompletedCallback);});
@@ -12,7 +14,7 @@
         console.log("DOM Ready.");
 
         controlHost = document.getElementById("content");
-        WinJS.UI.Pages.render("pages/initialRun.html", controlHost);
+        pageRendered = WinJS.UI.Pages.render("pages/initialRun.html", controlHost);
         /*WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
             datesContainer = controlHost.querySelector("#datesListContainer");
 
@@ -52,7 +54,7 @@
                    Otherwise, the event is fired as soon as Windows needs to activate the app. */
                 // App activation comes after DOMContentLoaded, but just to make it explicitly clear, we'll
                 // set this.
-                //eventArgs.setPromise(uiSetupCompletePromise);
+                eventArgs.setPromise(pageRendered);
 
                 var splash = eventArgs.detail.splashScreen;
                 /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively

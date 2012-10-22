@@ -22,19 +22,48 @@
 	/* TODO: Fill background top and bottom of png image with water color,
 	   (remove antarctica) */
 	background-color: #a5bfdd;
-	background-image: url("/images/worldmap/map.png");
+	/*background-image: url("/images/worldmap/map.png"); set in Page render */
 	background-repeat: repeat-x;
-	background-position-y: 40%;
 	background-clip: content-box;
-	border: 1px solid rgba(0, 0, 0, .35);
+	border: 1px solid rgba(0, 0, 0, .45);
+    overflow: hidden;
 	position: relative;
 	height: 530px;
-	transition: background-position-x 1s ease, background-position-y 1s ease;
 	top: 40px;
 	width: 1000px;
 	display: -ms-flexbox;
 	-ms-flex-flow: row;
 	-ms-flex-align: center;
+}
+
+#mapImage {
+    display: none;
+}
+
+#marker {
+	display: -ms-flexbox;
+	-ms-flex-align: center;
+	height: 15px;
+	/*margin-left: 15px;*/
+    opacity: 0;
+	position: absolute;
+	left: 50%;
+}
+
+#marker div.leftArrow {
+	border-color: transparent black transparent transparent;
+	border-style: solid;
+	border-width: 15px 15px 15px 0;
+	display: block;
+	height: 0px;
+	width: 0px;
+}
+
+#marker h3 {
+	background: black;
+	height: 20px;
+	line-height: 20px;
+	padding: 5px 10px 5px 5px;
 }
 
 #overlay {
@@ -43,6 +72,7 @@
 	left: 0;
 	position: absolute;
 	top: 0;
+    transition: opacity .3s linear;
 	width: 100%;
 	z-index: 0;
 }
@@ -50,13 +80,51 @@
 #controls {
 	background: black;
 	margin: 0 auto;
-	padding: 24px 30px 30px 30px;
+	padding: 30px 40px 40px 40px;
 	position: relative;
+    top: 0px;
+    transition: top .5s ease;
 	z-index: 10;
 }
 
 #controls p:last-child {
 	margin-bottom: 0;
+}
+
+.win-upbutton {
+    display: inline-block;
+    min-width: 0;
+    min-height: 0;
+    background-clip: border-box;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border-width: 2px;
+    border-style: solid;
+    padding: 0;
+    text-align: center;
+
+    /* Normal sizing. */
+    width: 30px;
+    height: 30px;
+    font-size: 16pt;
+    line-height: 30px; /* line-height must match the content box height. */
+    vertical-align: baseline;
+}
+.win-upbutton:hover, .win-upbutton:hover:active {
+    border-width: 2px;
+    border-style: solid;
+    border-radius: 50%;
+}
+.win-upbutton::before {
+    font-family: "Segoe UI Symbol";
+    font-weight: normal;
+    content: "\E0E4";
+	vertical-align: top;
+	position: relative;
+	top: -3px;
+}
+.win-upbutton:disabled, .win-upbutton:disabled:active {
+    visibility: hidden;
 }
 
 /* Toggle switch controls from ui-light.css */
