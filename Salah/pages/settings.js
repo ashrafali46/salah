@@ -6,10 +6,16 @@
         render: function (element, options, loadResult) {
             element.appendChild(loadResult);
 
-            return new WinJS.Promise(function (complete, error, progress) {
+            var locationHost = element.querySelector("#locationHost");
+            var locationControl = new LocationControl(locationHost);
+            locationControl.addEventListener("ready", function () {
+                console.log("LocationControl ready");
+            });
+
+            /*return new WinJS.Promise(function (complete, error, progress) {
                 var mapImage = element.querySelector("#mapImage");
                 mapImage.addEventListener("load", function () {
-                    var locationContainer = element.querySelector("#locationSetting");
+                    var locationContainer = element.querySelector("#mapContainer");
                     locationContainer.style.backgroundImage = "url('" + mapImage.src + "')";
                     locationContainer.mapWidth = mapImage.naturalWidth;
                     locationContainer.mapHeight = mapImage.naturalHeight;
@@ -21,21 +27,21 @@
                     }, 100);
                 });
                 mapImage.src = "/images/worldmap/map-altered2.png";
-            });
+            });*/
         },
 
         ready: function(element, options) {
-            element.querySelector("#locationSubmitButton").addEventListener("click", function () {
+            /*element.querySelector("#locationSubmitButton").addEventListener("click", function () {
                 var civicLocation = element.querySelector("#civicLocation").value;
-                console.log("civicLocation submitted: " + civicLocation);
-            });
+                this.setLocationManual(civicLocation); // civiclocation that is of the form <latitude, longitude> is also accepted
+            }.bind(this));
 
             /// <var name="toggleElementControl" type="WinJS.UI.ToggleSwitch" />
             this.toggleControl = element.querySelector("#toggleLocationControl").winControl;
             this.toggleControl.addEventListener("change", this.handleAutoLocToggle.bind(this));
 
             this.upButton = element.querySelector("#upButton");
-            this.upButton.addEventListener("click", this.showLocationControls.bind(this));
+            this.upButton.addEventListener("click", this.showLocationControls.bind(this));*/
         },
 
         handleAutoLocToggle: function (event) {
@@ -200,8 +206,38 @@
             // set the location setting
         },
 
+        
+        setLocationManual: function (locationString) {
+            var that = this;
+            // TODO check to see if this is of the form latitude, longitude
+            console.log("locationString submitted: " + locationString);
+            
+            var geocodeRequestURI = "http://nominatim.openstreetmap.org/search?q=" + locationString.replace("&", "and") + "&format=json&addressdetails=1";
+            var TIMEOUT = 2500;
+            WinJS.Promise.timeout(TIMEOUT, WinJS.xhr({
+                url: geocodeRequestURI,
+                headers: { "User-Agent": "SalahApp/1.0 (Windows 8; email:bayvakoof@live.com)" }
+            })).then(function complete(xhrResult) {
+                that.hideLocationControls();
+                var geocode = JSON.parse(xhrResult.responseText);
+                for (var i = 0; i < geocode.length; i++) {
+                    var result = geocode[i];
+                    if (result.class == "place") {
+                        that.centerMapAsync(result.lat, result.lon).then(function () {
+                            var marker = that.element.querySelector("#marker");
+                            marker.querySelector("h3").innerText = locationString;
+                            marker.style.opacity = 1;
+                        });
+                    }
+                }
+            }, function error(e) {
+                // unable to geocode inputted address
+                // display error to user, tell him to input his latitude/longitude directly into the textinput
+            });
+        },
+
         centerMapAsync: function (latitude, longitude) {
-            var locationContainer = this.element.querySelector("#locationSetting");
+            var locationContainer = this.element.querySelector("#mapContainer");
 
             // circumference is equilavent to the the background image's width (which is also locationContainer.clientWidth)
             var radius = locationContainer.mapWidth / (2 * Math.PI);
@@ -229,12 +265,12 @@
             var ratio = (offsetDistanceSqrd / maxDistanceSqrd);
             var duration = 2 * ratio + 0.5 * (1 - ratio);
 
-            locationContainer.style.transitionDuration = duration + "s, " + duration + "s";
+            locationContainer.style.transition = duration + "s, " + duration + "s";
 
             locationContainer.style.backgroundPositionX = backPosX + "px";
             locationContainer.style.backgroundPositionY = (backPosY + locationContainer.mapCenterOffsetY) + "px";
             return WinJS.Promise.timeout(duration * 1000);
-        },        
+        },
 
         hideLocationControls: function() {
             var dimmer = this.element.querySelector("#overlay");
