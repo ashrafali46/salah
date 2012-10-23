@@ -207,9 +207,12 @@ LocationControl.prototype._attachEvents = function (options) {
                 that._setLocationAutoAsync();
             }
             
-            var readyEvent = document.createEvent("CustomEvent");
-            readyEvent.initCustomEvent("ready", true, false, {});
-            that.element.dispatchEvent(readyEvent);
+            // Give a small timeout so the background image won't pop in
+            setTimeout(function () {
+                var readyEvent = document.createEvent("CustomEvent");
+                readyEvent.initCustomEvent("ready", true, false, {});
+                that.element.dispatchEvent(readyEvent);
+            }, 50);
         });
     });
 
@@ -440,6 +443,9 @@ LocationControl.prototype._setLocationAutoAsync = function () {
             autoLocationAttemptCompleteCallback(false);
         }).then(function() {
             that._progress.style.visibility = "hidden";
+            that._locationInput.disabled = false;
+            that._manualSubmit.disabled = false;
+
             that._request = null;
         });
 

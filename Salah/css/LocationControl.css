@@ -2,18 +2,20 @@
 	-ms-flex-direction: row;
 	-ms-flex-align: center;
 	background-repeat: repeat;
-	background-clip: content-box;	
+	/*background-clip: content-box;*/
+    background-clip: border-box;
     background-size: 1000px 1000px;
 	display: -ms-flexbox;
     height: 100%;
     overflow: hidden;
+    position: relative;
 
     /* Prevent width from being overridden (since map image resources are fixed size - 1000px) */
     width: 1000px !important; 
 }
 
 .dimmer {
-	background: rgba(0, 0, 0, .8);
+	background: rgba(0, 0, 0, .6);
 	height: 100%;
 	left: 0;
 	position: absolute;
@@ -36,12 +38,15 @@
 }
 
 .progress {
-	margin-top: 6px;
+    color: white;
 	float: right;
+	margin-top: 6px;
+    opacity: 0; /* Since the GPS actions take less than 2seconds, don't indicate progress */
 }
 
 .controls {
 	background: black;
+    box-shadow: rgba(0, 0, 0, .45) 0px 0px 6px;
 	padding: 30px;
 }
 

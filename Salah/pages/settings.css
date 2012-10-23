@@ -1,6 +1,21 @@
-﻿#locationHost {
-    border: 1px solid rgba(0, 0, 0, .4);
+﻿#settingsContainer {
+}
+
+#locationSetting {
+    margin: 0 auto;
+    width: 1000px;
+}
+
+#locationControlHost:first-child {
+    margin-top: 60px;
+}
+
+#locationControlHost {
+    border: 1px solid rgba(0, 0, 0, 0.4);
+    margin-top: 20px;
+    width: 1000px;
+    /* Absolute positioning messes with enterPage animations
     bottom: 120px;
     position: absolute;
-    top: 140px;
+    top: 180px;*/
 }

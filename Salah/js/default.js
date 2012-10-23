@@ -4,8 +4,8 @@
 (function () {
     "use strict";
 
-    var header, controlHost, datesContainer;
-    var pageRendered;
+    var header, contentHost, datesContainer;
+    var pageRenderedPromise;
 
     
     // Regardless of activation/launch type, I will always want to display the same content (fresh salah times)
@@ -13,8 +13,9 @@
     WinJS.Utilities.ready(function () {
         console.log("DOM Ready.");
 
-        controlHost = document.getElementById("content");
-        pageRendered = WinJS.UI.Pages.render("pages/settings.html", controlHost);
+        contentHost = document.getElementById("content");
+        contentHost.style.opacity = 0;
+        pageRenderedPromise = WinJS.UI.Pages.render("pages/settings.html", contentHost);
         /*WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
             datesContainer = controlHost.querySelector("#datesListContainer");
 
@@ -33,7 +34,7 @@
         });*/
 
         header = document.getElementById("header");
-        //header.style.opacity = 0;
+        header.style.opacity = 0;
     });
 
     var app = WinJS.Application;
@@ -54,7 +55,7 @@
                    Otherwise, the event is fired as soon as Windows needs to activate the app. */
                 // App activation comes after DOMContentLoaded, but just to make it explicitly clear, we'll
                 // set this.
-                eventArgs.setPromise(pageRendered);
+                eventArgs.setPromise(pageRenderedPromise);
 
                 var splash = eventArgs.detail.splashScreen;
                 /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively
@@ -65,6 +66,7 @@
                     // (issue: position: absolute on the datesContainer messes with the enterPage animation when 
                     //  running on the controlHost)
                     //WinJS.UI.Animation.enterPage([[header], [datesContainer]], null);
+                    WinJS.UI.Animation.enterPage([[header], [contentHost]], null);
 
                     console.log("Splash screen dismissed.");
                 });

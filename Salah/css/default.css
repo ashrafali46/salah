@@ -1,5 +1,8 @@
 ﻿body {
-    background-color: #07411e;
+    /*background-color: #07411e;
+    background-color: #036a23;*/
+    /*background-color: #00521b;*/
+    background-color: #57a115;
 }
 
 #header {
@@ -8,7 +11,7 @@
 }
 
 #content {
-	margin-top: 31px;
+	margin-top: 24px;
 }
 
 /*@media screen and (-ms-view-state: fullscreen-landscape) {

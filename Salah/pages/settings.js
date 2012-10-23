@@ -4,22 +4,25 @@
     
     WinJS.UI.Pages.define("/pages/settings.html", {
         render: function (element, options, loadResult) {
+            var that = this;
+
             element.appendChild(loadResult);
 
-            var locationHost = element.querySelector("#locationHost");
-            var locationControl = new LocationControl(locationHost);
+            var locationControlHost = element.querySelector("#locationControlHost");
+            locationControlHost.style.height = (window.innerHeight - (180 + 120)) + "px";
+
+            this.locationControl = new LocationControl(locationControlHost);
             return new WinJS.Promise(function (complete, error, progress) {
-                locationControl.addEventListener("ready", function () {
+                that.locationControl.addEventListener("ready", function () {
                     complete();
                 });
             });
+        },
+
+        ready: function(element, options) {
+            this.locationControl.addEventListener("locationset", function (event) {
+                console.log("Location set! Location name: " + event.detail.locationName);
+            });
         }
     });
-
-    // follow the guidelines here to create a wrapper object around the geolocation
-    // that knows when the locator is enabled/disabled
-
-    function saveLocation(civicAddress, latitude, longitude) {
-        /// <summary>Saves location values to the app's localStorage</summary>
-    }
 })();
