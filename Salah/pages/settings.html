@@ -12,27 +12,28 @@
 		<link rel="stylesheet" href="settings.css" />
     </head>
     <body>
+        <button class="win-backbutton" id="backButton"></button>
         <div id="header">
             <h1>Settings</h1>
         </div>
         <div id="settingsContainer">
             <div id="locationSetting">
-                <h2 class="settingTitle">Location</h2>
+                <h2 class="title">Set your Location</h2>
                 <div id="locationControlHost"></div>
             </div>
 
             <div id="backgroundSetting">
-                <h2 class="settingTitle">Background</h2>
+                <h2 class="title">Choose a Background</h2>
+                <div id="bgListViewHost"></div>
             </div>
         </div>
-
-        <div id="backgroundItemTemplate" style="display: none">
-            <img src="#" data-win-bind="src: thumb; title: title" />
-            <div>
-                <h2 data-win-bind="innerText: title"></h2>
-                <h3 data-win-bind="innerText: location"></h3>
-                <p>By <a data-win-bind="innerText: auth; href: authURL"></a></p>
+        <div id="continue">
+            <div style="display: -ms-flexbox; -ms-flex-align: center; -ms-flex-pack: end;">
+                <h1>Continue</h1>
+                <button class="forwardbutton"></button>
             </div>
+            <p class="note win-type-xx-small">Salah times are calculated using conventions set by the Islamic Society of North 
+                America.<!--As always, please use discretion when determining when to pray.--></p>
         </div>
     </body>
 </html>

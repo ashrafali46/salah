@@ -6,15 +6,15 @@
     background-color: #124900;
     background-image: url("/images/backgrounds/pattern150.png");
     background-repeat: repeat;
+    background-position: center;
+    margin: 0;
+    padding: 0;
 }
 
-#header {
-	margin-top: 45px;
-	margin-left: 120px;
-}
-
-#content {
-	margin-top: 24px;
+#contentHost {
+	top: 0px;
+	position: absolute;
+	width: 100%;
 }
 
 /*@media screen and (-ms-view-state: fullscreen-landscape) {

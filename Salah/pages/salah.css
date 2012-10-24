@@ -1,4 +1,9 @@
-﻿#datesListContainer {
+﻿#header {
+    margin-top: 45px;
+    margin-left: 120px;
+}
+
+#datesListContainer {
     bottom: 0;
 	position: absolute;
     width: 100%;

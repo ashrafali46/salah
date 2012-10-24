@@ -122,7 +122,7 @@
 
                 var salahTime = document.createElement("h2");
                 salahEl.appendChild(salahTime);
-                salahTime.innerText = moment(times[time]).format("h:mm a");
+                salahTime.innerText = moment(times[time]).format("h\u2236mm a"); // Unicode character for a higher colon
                 // ensure salahTime has a width set (for proper first animation)
                 salahTime.style.width = getComputedStyle(salahTime).width;
             }

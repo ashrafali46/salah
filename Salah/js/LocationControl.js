@@ -19,8 +19,7 @@ function LocationControl(controlHost, options) {
     /// <summary>LocationControl class manages the location control.</summary>
     /// <param type="HTMLDivElement" name="element">The div which will contain the control after instantiation.</param>
     /// <param type="Object" name="options">Options used to customize the control as an 
-    /// object with possible keys: title (String), location (Geoposition), locationName (String), autoMethod (Boolean). Note if 
-    /// location is included locationName should also be included.</param>
+    /// object with possible keys: location (Geoposition), locationName (String), autoMethod (Boolean).</param>
 
     /// <field name='controlHost' type='HTMLElement'>The element hosting the control.</field>
     /// <field name='title' type='String'>The title of the LocationControl.</field>
@@ -71,9 +70,9 @@ LocationControl.prototype._initialize = function (options) {
         this.location = options.location;
 
         if (options.locationName)
-            that.locationName = options.locationName;
+            this.locationName = options.locationName;
         else
-            that.locationName = that._latLonToString(this.location.coordinate.latitude, this.location.coordinate.longitude);
+            this.locationName = this._latLonToString(this.location.coordinate.latitude, this.location.coordinate.longitude);
     }
 
     // Start loading the map image
@@ -82,12 +81,6 @@ LocationControl.prototype._initialize = function (options) {
 
 LocationControl.prototype._loadHTML = function (options) {
     /// <summary>Inserts LocationControl html content into the container element</summary>
-    if (options && options.title) {
-        var title = document.createElement("h2");
-        title.className = "title";
-        title.innerText = options.title;
-        this.element.appendChild(title);
-    }
 
     var mapContainer = document.createElement("div");
 	this._mapContainer = mapContainer;
@@ -154,11 +147,11 @@ LocationControl.prototype._loadHTML = function (options) {
     this._methodToggle = new WinJS.UI.ToggleSwitch(toggleHost, { title: 'Obtain my location automatically', labelOff: 'No', labelOn: 'Yes' });
     controls.appendChild(toggleHost);
     if (options && options.autoMethod) {
-        this._methodToggle.checked = options.autoMethod;
+        this._setMethodToggle(options.autoMethod);
 
         // uncheck if geolocation permission is not enabled
         if ((new Windows.Devices.Geolocation.Geolocator()).locationStatus == Windows.Devices.Geolocation.PositionStatus.disabled) {
-            this._methodToggle.checked = false;
+            this._setMethodToggle(false);
         }
     }
 
@@ -176,9 +169,18 @@ LocationControl.prototype._loadHTML = function (options) {
     manualParagraph.appendChild(this._manualSubmit);
     controls.appendChild(manualParagraph);
 
+    var manualSubmit = this._manualSubmit;
+    // If i include wrap the manualParagraph with a form, the renderer crashes
+    // when the submit button is invoked. Having a form would allow submission when the enter key is pressed though.
+    manualParagraph.addEventListener("keypress", function (event) {
+        if (event.keyCode == 13) { //Enter keycode
+            manualSubmit.click();
+        }
+    });
+
     if (options && options.autoMethod) {
-        this._locationInput.disabled = false;
-        this._manualSubmit.disabled = false;
+        this._locationInput.disabled = true;
+        this._manualSubmit.disabled = true;
     }
 
     this.element.appendChild(mapContainer);
@@ -195,6 +197,7 @@ LocationControl.prototype._attachEvents = function (options) {
 
         var centerMapPromise;
         if (options && options.location) {
+            that.setControlsVisibility(false, false);
             centerMapPromise = that._centerMapOnLatLonAsync(options.location.coordinate.latitude, options.location.coordinate.longitude, false);
         } else {
             // The equator is the North South center but the contents have a visual center that's around 34 N
@@ -202,6 +205,10 @@ LocationControl.prototype._attachEvents = function (options) {
         }
 
         centerMapPromise.then(function () {
+            if (options.locationName) {
+                that._setMarker(true, options.locationName);
+            }
+
             if (options && options.autoMethod) {
                 // Start getting location automatically
                 that._setLocationAutoAsync();
@@ -221,6 +228,8 @@ LocationControl.prototype._attachEvents = function (options) {
     });
 
     this._methodToggle.addEventListener("change", function () {
+        that._setMethodToggle(that._methodToggle.checked);
+
         if (that._methodToggle.checked) {
             that._locationInput.disabled = true;
             that._manualSubmit.disabled = true;
@@ -238,9 +247,30 @@ LocationControl.prototype._attachEvents = function (options) {
     this._manualSubmit.addEventListener("click", this._manualEntryHandler.bind(that));
 }
 
-LocationControl.prototype.setControlsVisibility = function (visible) {
+LocationControl.prototype._setMethodToggle = function (checked) {
+    var settings = Windows.Storage.ApplicationData.current.localSettings.values;
+    settings["autoMethod"] = checked;
+
+    this._methodToggle.checked = checked;
+}
+
+LocationControl.prototype.setControlsVisibility = function (visible, animate) {
     /// <summary>Toggles the visibility of the ui elements which allow the user to manipulate the location 
     /// value of the control.</summary>
+    if (animate == undefined)
+        animate = true;
+
+    if (animate) {
+        // This is probably bad, you should read in these properties from the css on load (using currentStyle)
+        // to be able to refer to them later on
+        this._dimmer.style.transition = "opacity .4s linear";
+        this._controlsContainer.style.transition = "top .45s ease";
+        this._visibilityButton.style.transition = "opacity .4s linear";
+    } else {
+        this._dimmer.style.transition = "";
+        this._controlsContainer.style.transition = "";
+        this._visibilityButton.style.transition = "";
+    }
     
     if (visible) {
         this._dimmer.style.opacity = 1;
@@ -249,7 +279,8 @@ LocationControl.prototype.setControlsVisibility = function (visible) {
         this._visibilityButton.disabled = true;
     } else {
         this._dimmer.style.opacity = 0;
-        this._controlsContainer.style.top = (this._mapContainer.clientHeight - this._controlsContainer.offsetTop) + "px";
+        if (parseFloat(this._controlsContainer.currentStyle.top) == 0)
+            this._controlsContainer.style.top = (this._mapContainer.clientHeight - this._controlsContainer.offsetTop) + "px";
         this._visibilityButton.style.opacity = 1;
         this._visibilityButton.disabled = false;
     }
@@ -290,7 +321,7 @@ LocationControl.prototype._manualEntryHandler = function (event) {
         });
     } else {
         // Geocode the input
-        var geocodeRequestURI = "http://nominatim.openstreetmap.org/search?q=" + locationEntry.replace("&", "and") + "&format=json&addressdetails=1";
+        var geocodeRequestURI = "http://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(locationEntry.replace("&", "and")) + "&format=json&addressdetails=1";
         var xhrPromise = WinJS.xhr({ url: geocodeRequestURI, headers: { "User-Agent": userAgent } });
 
         WinJS.Promise.timeout(XHR_TIMEOUT, xhrPromise).then(
@@ -301,12 +332,13 @@ LocationControl.prototype._manualEntryHandler = function (event) {
                     geocode = JSON.parse(xhrResult.responseText);
                 } catch (error) {
                     locationFailedCallback(error);
+                    return;
                 }
 
                 for (var i = 0; i < geocode.length; i++) {
                     // Iterate through the response, so that you find the first place
                     var result = geocode[i];
-                    if (result.class == "place") {
+                    if (result.class == "place" || result.class == "boundary") {
                         var address = result.address;
                         var placeName = address.city + (address.state ? ", " + address.state : "") + ", " + address.country;
                         if (placeName.indexOf("undefined") != -1)
@@ -331,6 +363,9 @@ LocationControl.prototype._manualEntryHandler = function (event) {
     locationPromise.then(
         function complete(result) {
             // Set location
+
+            // See if you can create a Geoposition object? If not, then you need to make it clear in the documentation
+            // that onlocationset events don't necessarily detail a Geoposition
             var geoposition = {
                 civicAddress: "",
                 coordinate: {
@@ -388,9 +423,10 @@ LocationControl.prototype._setLocationAutoAsync = function () {
             that.location = location;
 
             var lat = location.coordinate.latitude, lon = location.coordinate.longitude;
+            that._setMarker(false);
             var centerPromise = that._centerMapOnLatLonAsync(lat, lon, true);
 
-            that.setControlsVisibility(false);
+            that.setControlsVisibility(false, true);
 
             var locationNameObtainedCallback;
             var locNamePromise = new WinJS.Promise(function (complete, error, progress) {
@@ -439,7 +475,7 @@ LocationControl.prototype._setLocationAutoAsync = function () {
                 console.log(error);
             }
 
-            that._methodToggle.checked = false;
+            that._setMethodToggle(false);
             that._locationInput.disabled = false;
             that._manualSubmit.disabled = false;
 
@@ -456,7 +492,7 @@ LocationControl.prototype._setLocationAutoAsync = function () {
 
         var PositionStatus = Windows.Devices.Geolocation.PositionStatus;
         if (status == PositionStatus.disabled) {
-            that._methodToggle.checked = false;
+            that._setMethodToggle(false);
         }
     });
 }
@@ -470,6 +506,8 @@ LocationControl.prototype._dispatchLocationSet = function (geoposition, location
 
 LocationControl.prototype._centerMapOnLatLonAsync = function (latitude, longitude, animate) {
     /// <summary>Translates the map background image so that latitude, longitude is centered</summary>
+
+    //TODO: change calculations so translations wrap around (i.e. going from japan to hawaii goes the long way currently)
 
     //var scaling = Windows.Graphics.Display.DisplayProperties.resolutionScale / 100;
 
@@ -519,7 +557,7 @@ LocationControl.prototype._centerMapOnLatLonAsync = function (latitude, longitud
     return completePromise;
 }
 
-LocationControl.prototype._setMarker = function (visible, markerText, animate) {
+LocationControl.prototype._setMarker = function (visible, markerText) {
     /// <summary>Sets the visibility and text contents of the marker</summary>
     /// <param name="visible" type="Boolean">Whether or not the marker is visible</param>
     /// <param name="markerText" type="String" optional="true">The text content of the marker</param>
