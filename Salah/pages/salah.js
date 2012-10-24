@@ -12,8 +12,7 @@
             this._prayerCalculator = new PrayerCalculator(location, method);
 
             // ensure DOM ready
-            this._datesList = document.getElementById("datesList");
-            this._datesList.addEventListener("scroll", this.datesListScrollHandler.bind(this));
+            this._datesList = element.querySelector("#datesList");
 
             // begin adding prayers to the page
             console.log("Adding yesterdays and todays salahs.");
@@ -24,15 +23,28 @@
 
             this.removeExpiredAsync(false).then(function () {
                 console.log("Removed expired prayers.");
+
                 // fill datesList with days so that salah times overflow the screen width
                 // we could also define a var that = this, and use .call to bind the correct this object to these function calls
                 // instead of using bind
-                this.fillDatesListAsync(); 
+                this.fillDatesListAsync();
 
                 console.log("Filled datesList.");
+
+                if (options && options.animatableElements) {
+                    options.animatableElements.push(this.element.querySelector(".header"));
+                    options.animatableElements.push(this._datesList);
+                }
+
                 // page is loaded with enough prayers
                 console.log("Completed document UI setup.")
             }.bind(this));
+        },
+
+        ready: function(element, options, loadResult) {
+            // Once rendering is complete we can measure lengths and attach handlers
+            this._datesList.addEventListener("scroll", this.datesListScrollHandler.bind(this));
+
         },
 
         addSalahTimes: function (date, animate) {

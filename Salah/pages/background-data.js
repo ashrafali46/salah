@@ -14,35 +14,35 @@ var backgroundListDataSource = (function () {
         location: "Palestine",
         auth: "Brian Beggerly",
         authURL: "http://www.flickr.com/photos/beggs/",
-        src: "dome of the rock.jpg"
+        src: "dome-of-the-rock.jpg"
     },
     {
         title: "Laleli Mosque",
         location: "Turkey",
         auth: "Edal Lefterov",
         authURL: "http://commons.wikimedia.org/wiki/User:Edal",
-        src: "laleli mosque.jpg"
+        src: "laleli-mosque.jpg"
     },
     {
         title: "Hassan II Mosque",
         location: "Morocco",
         auth: "Rosino",
         authURL: "http://www.flickr.com/photos/rosino/",
-        src: "hassan mosque.jpg"
+        src: "hassan-mosque.jpg"
     },
     {
         title: "Abuja National Mosque",
         location: "Nigeria",
         auth: "Kipp Jones",
         authURL: "http://www.flickr.com/photos/kippster/",
-        src: "mosque abuja.png"
+        src: "mosque-abuja.jpg"
     },
     {
         title: "Jama Masjid",
         location: "India",
         auth: "Antonio García",
         authURL: "http://www.flickr.com/photos/agarcia/",
-        src: "jama masjid.png"
+        src: "jama-masjid.jpg"
     }];
 
     var backgroundList = new WinJS.Binding.List(data);

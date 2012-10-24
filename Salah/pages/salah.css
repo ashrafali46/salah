@@ -1,6 +1,8 @@
-﻿#header {
+﻿.salahPage .header {
     margin-top: 45px;
     margin-left: 120px;
+	position: absolute;
+	top: 0;
 }
 
 #datesListContainer {
@@ -43,7 +45,7 @@
 }
 
 label.dateStamp {
-	color: rgba(255, 255, 255, 0.8);
+	color: rgba(255, 255, 255, 0.95);
 	display: block;
 	font-size: 11pt;
     font-weight: 600;
@@ -52,7 +54,7 @@ label.dateStamp {
 }
 
 .salahList > li {
-	background: rgba(255, 255, 255, 0.08);
+	background: rgba(0, 0, 0, 0.68);
 	margin-right: 2px;
 }
 

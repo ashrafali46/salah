@@ -320,8 +320,9 @@ LocationControl.prototype._manualEntryHandler = function (event) {
             locationName: "Your location: " + this._latLonToString(lat, lon)
         });
     } else {
-        // Geocode the input
-        var geocodeRequestURI = "http://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(locationEntry.replace("&", "and")) + "&format=json&addressdetails=1";
+        // Geocode the input, the mapquestapi assumes america unless a country is supplied (we can parse the input for a country, but nominatim is good for now)
+        //var geocodeRequestURI = "http://www.mapquestapi.com/geocoding/v1/address?key=Fmjtd%7Cluuanu0r29%2Cax%3Do5-96b5gu&location=" + encodeURIComponent(locationEntry) + "&thumbMaps=false";
+        var geocodeRequestURI = "http://open.mapquestapi.com/nominatim/v1/search?q=" + encodeURIComponent(locationEntry) + "&format=json&addressdetails=1";
         var xhrPromise = WinJS.xhr({ url: geocodeRequestURI, headers: { "User-Agent": userAgent } });
 
         WinJS.Promise.timeout(XHR_TIMEOUT, xhrPromise).then(
@@ -340,7 +341,7 @@ LocationControl.prototype._manualEntryHandler = function (event) {
                     var result = geocode[i];
                     if (result.class == "place" || result.class == "boundary") {
                         var address = result.address;
-                        var placeName = address.city + (address.state ? ", " + address.state : "") + ", " + address.country;
+                        var placeName = address.city + (address.state ? ", " + address.state : "") + (address.country ? ", " + address.country : "");
                         if (placeName.indexOf("undefined") != -1)
                             placeName = locationEntry;
                         locationSuccessCallback({
@@ -364,18 +365,13 @@ LocationControl.prototype._manualEntryHandler = function (event) {
         function complete(result) {
             // Set location
 
-            // See if you can create a Geoposition object? If not, then you need to make it clear in the documentation
-            // that onlocationset events don't necessarily detail a Geoposition
-            var geoposition = {
-                civicAddress: "",
-                coordinate: {
-                    latitude: result.latitude,
-                    longitude: result.longitude
-                }
+            var locationObject = {
+                latitude: result.latitude,
+                longitude: result.longitude
             }
 
             // Save the location values
-            that.location = geoposition;
+            that.location = location;
             that.locationName = result.locationName;
             
             // Hide the marker, and center the map on the location
@@ -385,7 +381,7 @@ LocationControl.prototype._manualEntryHandler = function (event) {
             });
 
             // Dispatch location set event
-            that._dispatchLocationSet(geoposition, result.locationName);
+            that._dispatchLocationSet(location, result.locationName);
             
             // Hide the controls
             that.setControlsVisibility(false);
@@ -434,15 +430,15 @@ LocationControl.prototype._setLocationAutoAsync = function () {
             });
 
             // Try to geocode the location to get the location name
-            var geocodeRequestURI = "http://nominatim.openstreetmap.org/reverse?format=json&lat=" + location.coordinate.latitude +
-                "&lon=" + location.coordinate.longitude + "&zoom=10";
+            var geocodeRequestURI = "http://open.mapquestapi.com/nominatim/v1/reverse?format=json&lat=" + location.coordinate.latitude +
+                "&lon=" + location.coordinate.longitude + "&zoom=10&addressdetails=1";
             var geocodeXhr = WinJS.xhr({ url: geocodeRequestURI, headers: { "User-Agent": userAgent } });
             WinJS.Promise.timeout(XHR_TIMEOUT, geocodeXhr).then(
                 function (xhr) {
                     try {
                         var response = JSON.parse(xhr.responseText);
                         var address = response.address;
-                        var placeName = address.city + (address.state ? ", " + address.state : "") + ", " + address.country;
+                        var placeName = (address.city || address.town) + (address.state ? ", " + address.state : "") + (address.country ? ", " + address.country : "");
                         locationNameObtainedCallback(placeName);
                     } catch (error) {
                         locationNameObtainedCallback(null);
@@ -460,7 +456,8 @@ LocationControl.prototype._setLocationAutoAsync = function () {
                     else
                         that.locationName = result.locationName;
 
-                    that._dispatchLocationSet(that.location, that.locationName);
+                    var locationObject = { latitude: that.location.coordinate.latitude, longitude: that.location.coordinate.longitude };
+                    that._dispatchLocationSet(locationObject, that.locationName);
 
                     that._setMarker(true, that.locationName);
 
@@ -497,10 +494,10 @@ LocationControl.prototype._setLocationAutoAsync = function () {
     });
 }
 
-LocationControl.prototype._dispatchLocationSet = function (geoposition, locationName) {
+LocationControl.prototype._dispatchLocationSet = function (location, locationName) {
     /// <summary>Dispatches the locationset event to the host.</summary>
     var locationSetEvent = document.createEvent("CustomEvent");
-    locationSetEvent.initCustomEvent("locationset", true, false, { geoposition: geoposition, locationName: locationName });
+    locationSetEvent.initCustomEvent("locationset", true, false, { location: location, locationName: locationName });
     this.element.dispatchEvent(locationSetEvent);
 }
 

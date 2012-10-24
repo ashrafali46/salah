@@ -5,35 +5,40 @@
         <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
         <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
         
+        <script src="/js/ApplicationSettings.js"></script>
         <script src="/js/LocationControl.js"></script>
         <script src="background-data.js"></script>
         <script src="settings.js"></script>
+
         <link rel="stylesheet" href="/css/LocationControl.css" />
 		<link rel="stylesheet" href="settings.css" />
     </head>
     <body>
-        <button class="win-backbutton" id="backButton"></button>
-        <div id="header">
-            <h1>Settings</h1>
-        </div>
-        <div id="settingsContainer">
-            <div id="locationSetting">
-                <h2 class="title">Set your Location</h2>
-                <div id="locationControlHost"></div>
-            </div>
+		<div class="settingsPage">
+			<div class="header">
+				<button class="win-backbutton" id="backButton"></button>
+				<h1>Settings</h1>
+			</div>
 
-            <div id="backgroundSetting">
-                <h2 class="title">Choose a Background</h2>
-                <div id="bgListViewHost"></div>
-            </div>
-        </div>
-        <div id="continue">
-            <div style="display: -ms-flexbox; -ms-flex-align: center; -ms-flex-pack: end;">
-                <h1>Continue</h1>
-                <button class="forwardbutton"></button>
-            </div>
-            <p class="note win-type-xx-small">Salah times are calculated using conventions set by the Islamic Society of North 
-                America.<!--As always, please use discretion when determining when to pray.--></p>
-        </div>
+			<div id="settingsContainer">
+				<div id="locationSetting">
+					<h2 class="title">Set your Location</h2>
+					<div id="locationControlHost"></div>
+				</div>
+
+				<div id="backgroundSetting">
+					<h2 class="title">Choose a Background</h2>
+					<div id="bgListViewHost"></div>
+				</div>
+			</div>
+
+			<div id="continue">
+				<div style="display: -ms-flexbox; -ms-flex-align: center; -ms-flex-pack: end;">
+					<h1>Continue</h1>
+					<button id="continueButton" class="forwardbutton"></button>
+				</div>
+				<p class="note win-type-xx-small">(Salah times are calculated using conventions set by the Islamic Society of North America.)</p>
+			</div>
+		</div>
     </body>
 </html>

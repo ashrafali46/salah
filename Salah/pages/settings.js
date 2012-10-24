@@ -1,131 +1,68 @@
 ﻿/// <reference path="//Microsoft.WinJS.1.0.RC/js/base.js" />
 /// <reference path="//Microsoft.WinJS.1.0.RC/js/ui.js" />
+
+/// <reference path="/js/LocationControl.js" />
+/// <reference path="/js/ApplicationSettings.js" />
 (function () {
     "use strict";
 
-    var settings = Windows.Storage.ApplicationData.current.localSettings.values;
-
     WinJS.UI.Pages.define("/pages/settings.html", {
         render: function (element, options, loadResult) {
+            /// <summary>Sets up the ui of the settings page</summary>
+            var finishedRenderingPromise;
+
             var that = this;
 
             element.appendChild(loadResult);
 
-            this._backButtonVisible = (options && options.backButton) || false;
-            this._firstRun = (options && options.firstRun) || false;
+            this._settingsFinishedCallback = function () {
+                that._unload();
 
-            if (this._backButtonVisible) {
-                element.querySelector("backButton").style.opacity = 1;
+                if (options && options.settingsFinishedCallback)
+                    options.settingsFinishedCallback();
+            };
+            this._applicationFirstRun = (ApplicationSettings.location === undefined);
+
+            var locationOptions; // Options for the location control
+            if (this._applicationFirstRun) {
+                // If application is being run for the first time, disable the back button
+                this._backButton = element.querySelector("#backButton");
+                this._backButton.disabled = true;
+
+                locationOptions = {};
+            } else {
+                locationOptions = {
+                    location: ApplicationSettings.location,
+                    locationName: ApplicationSettings.locationName,
+                    autoMethod: ApplicationSettings.autoMethod
+                };
             }
-            
-            // Set container heights
-            fixHeights();
+
+            // Hide the continue element
+            element.querySelector("#continue").style.visibility = "hidden";
+
+            // Set container heights and a resize listener
+            this._setContainerHeights();
             // Make sure you remove this event listener on Page unload
-            //window.addEventListener("resize", fixHeights)
+            this._resizeListener = this._setContainerHeights.bind(this);
+            window.addEventListener("resize", this._resizeListener);
 
             // Create the location control
-            var locationOptions = {};
-            if (settings["location"])
-                locationOptions.location = JSON.parse(settings["location"]);
-            if (settings["locationName"])
-                locationOptions.locationName = settings["locationName"];
-            if (settings["autoMethod"])
-                locationOptions.autoMethod = settings["autoMethod"];
-
             this.locationControl = new LocationControl(element.querySelector("#locationControlHost"), locationOptions);
-
-            // Create the backgroundListView
-            this.bgListView = this._createBackgroundListView();
-
             // The LocationControl takes some time to load the map image
-            return new WinJS.Promise(function (complete, error, progress) {
+            var locationControlReadyPromise = new WinJS.Promise(function (complete) {
                 that.locationControl.addEventListener("ready", function () {
                     complete();
                 });
             });
 
-            // Sets container heights
-            function fixHeights() {
-                var settingsContainer = element.querySelector("#settingsContainer"),
-                    locationControlHost = element.querySelector("#locationControlHost"),
-                    backgroundSetting = element.querySelector("#backgroundSetting");
+            // Create the backgroundListView
+            this.bgListView = this._createBackgroundListView();
 
-                // Set the settings height to span the window (so that the settings scrollbar is at the bottom)
-                settingsContainer.style.height = (window.innerHeight - settingsContainer.offsetTop) + "px";
-
-                var innerElementHeight = Math.min(1000, (window.innerHeight - (180 + 120)));
-                locationControlHost.style.height = innerElementHeight + "px";
-                backgroundSetting.style.height = innerElementHeight + "px";
-            }
+            finishedRenderingPromise = locationControlReadyPromise;
+            return finishedRenderingPromise;
         },
-
-        ready: function (element, options) {
-            var that = this;
-
-
-            var bgChooseCallback, locationChooseCallback;
-            var backgroundChosen = new WinJS.Promise(function (c) {
-                bgChooseCallback = c;
-            });
-
-            var locationEntered = new WinJS.Promise(function (c) {
-                locationChooseCallback = c;
-            });
-
-            WinJS.Promise.join([backgroundChosen, locationEntered]).then(function () {
-                if (that._firstRun) {
-                    setTimeout(function () {
-                        WinJS.UI.Animation.enterContent(that.element.querySelector("#continue"));
-                    }, 500);
-                }
-            });
-
-            this.bgListView.addEventListener("iteminvoked", function (event) {
-                //var itemIndex = event.detail.itemIndex;
-                event.detail.itemPromise.then(function complete(item) {
-                    that.bgListView.selection.set(item);
-
-                    var imageURI = "/images/backgrounds/" + item.data.src;
-                    document.body.style.backgroundImage = "url('" + imageURI + "')";
-
-                    if (item.data.src == "pattern.png") {
-                        document.body.style.backgroundSize = "";
-                    } else {
-                        document.body.style.backgroundSize = "cover";
-                    }
-
-                    if (bgChooseCallback) {
-                        bgChooseCallback();
-                        bgChooseCallback = null;
-                    }
-
-                    
-                    settings["backgroundSrc"] = item.data.src;
-                });
-            });
-
-            this.locationControl.addEventListener("locationset", function (event) {
-                console.log("Location set! Location name: " + event.detail.locationName);
-
-                // JSON.stringify fails on Windows.Devices.Geolocation.Geoposition objects (because they are functions)
-                var geoposition = {
-                    civicAddress: "",
-                    coordinate: {
-                        latitude: event.detail.geoposition.coordinate.latitude,
-                        longitude: event.detail.geoposition.coordinate.longitude
-                    }
-                }
-
-                settings["location"] = JSON.stringify(geoposition);
-                settings["locationName"] = event.detail.locationName;
-
-                if (locationChooseCallback) {
-                    locationChooseCallback();
-                    locationChooseCallback = null;
-                }
-            });
-        },
-
+        
         _createBackgroundListView: function () {
             var bgListViewHost = this.element.querySelector("#bgListViewHost");
 
@@ -139,8 +76,8 @@
                 });
 
             // Select the current background choice
-            if (settings["backgroundSrc"]) {
-                var backgroundSrc = settings["backgroundSrc"];
+            if (ApplicationSettings.background) {
+                var backgroundSrc = ApplicationSettings.background;
                 var selectIndex = -1;
                 var list = backgroundListDataSource.list;
                 for (var i = 0; i < list.length; i++) {
@@ -163,10 +100,11 @@
                     var itemContainer = document.createElement("div");
                     itemContainer.className = "backgroundListItem";
 
-                    var thumb = document.createElement("img");
+                    /*var thumb = document.createElement("img");
                     thumb.src = "/images/backgrounds/thumbs/" + item.data.src;
                     thumb.alt = item.data.title;
-                    itemContainer.appendChild(thumb);
+                    itemContainer.appendChild(thumb);*/
+					itemContainer.style.backgroundImage = "url('/images/backgrounds/thumbs/" + item.data.src + "')";
 
                     var infoDiv = document.createElement("div");
 
@@ -174,9 +112,11 @@
                     title.innerText = item.data.title;
                     infoDiv.appendChild(title);
 
-                    var location = document.createElement("h3");
-                    location.innerText = (item.data.location ? item.data.location : "");
-                    infoDiv.appendChild(location);
+					if (item.data.location) {
+						var location = document.createElement("h3");
+						location.innerText = item.data.location;
+						infoDiv.appendChild(location);
+					}
 
                     var author = document.createElement("p");
                     author.innerText = "By "
@@ -196,7 +136,86 @@
                     return itemContainer;
                 });
             };
-        }
+        },
+
+        // Sets container heights
+        _setContainerHeights: function() {
+            var settingsContainer = this.element.querySelector("#settingsContainer"),
+                locationControlHost = this.element.querySelector("#locationControlHost"),
+                backgroundSetting = this.element.querySelector("#backgroundSetting");
+
+            // Set the LocalSettingsValues height to span the window (so that the LocalSettingsValues scrollbar is at the bottom)
+            settingsContainer.style.height = (window.innerHeight - settingsContainer.offsetTop) + "px";
+
+            var innerElementHeight = Math.min(1000, (window.innerHeight - (180 + 120)));
+            locationControlHost.style.height = innerElementHeight + "px";
+            backgroundSetting.style.height = (innerElementHeight + 60) + "px";
+        },
+
+        ready: function (element, options) {
+            var that = this;
+
+            // Use these to keep track of when the user has chosen a location and application background
+            var backgroundChosenCallback, locationChosenCallback;
+            var backgroundChosenPromise = new WinJS.Promise(function (c) { backgroundChosenCallback = c; }),
+                locationEnteredPromise = new WinJS.Promise(function (c) { locationChosenCallback = c; });
+
+            // On first run show the continue element after user has set a location and chosen a background
+            WinJS.Promise.join([backgroundChosenPromise, locationEnteredPromise]).then(function () {
+                if (that._applicationFirstRun) {
+                    var continueEl = that.element.querySelector("#continue");
+                    continueEl.style.visibility = "visible";
+                    WinJS.UI.Animation.enterContent(continueEl).then(function () {
+                        continueEl.style.visibility = "";
+                        continueEl.style.opacity = "";
+                    });
+
+                    var continueButton = that.element.querySelector("#continueButton");
+                    continueButton.addEventListener("click", that._settingsFinishedCallback);
+                }
+            });
+
+            // Attach settingsFinishedCallback to the back button
+            this.element.querySelector("#backButton").addEventListener("click", this._settingsFinishedCallback);
+
+            // Handle background item selection
+            this.bgListView.addEventListener("iteminvoked", function (event) {
+                //var itemIndex = event.detail.itemIndex;
+                event.detail.itemPromise.then(function complete(item) {
+                    that.bgListView.selection.set(item);
+
+                    var imageURI = "/images/backgrounds/" + item.data.src;
+                    document.body.style.backgroundImage = "url('" + imageURI + "')";
+
+                    if (item.data.src == "pattern.png") {
+                        document.body.style.backgroundSize = "";
+                    } else {
+                        document.body.style.backgroundSize = "cover";
+                    }
+
+                    if (backgroundChosenCallback) {
+                        backgroundChosenCallback();
+                        backgroundChosenCallback = null;
+                    }
+
+                    //ApplicationSettings.background = item.data.src;
+                });
+            });
+
+            this.locationControl.addEventListener("locationset", function (event) {
+                //ApplicationSettings.location = event.detail.location;
+                //ApplicationSettings.locationName = event.detail.locationName;
+
+                if (locationChosenCallback) {
+                    locationChosenCallback();
+                    locationChosenCallback = null;
+                }
+            });
+        },
+
+        _unload: function () {
+            window.removeEventListener("resize", this._resizeListener);
+        }        
     });
 
 })();
