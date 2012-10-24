@@ -13,7 +13,7 @@
     WinJS.Utilities.ready(function () {
         console.log("DOM Ready.");
 
-        contentHost = document.getElementById("content");
+        contentHost = document.getElementById("contentHost");
         contentHost.style.opacity = 0;
         pageRenderedPromise = WinJS.UI.Pages.render("pages/settings.html", contentHost);
         /*WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
@@ -32,9 +32,6 @@
                 salahControl.updateDatesListAsync();
             }, INITIAL_DELAY);
         });*/
-
-        header = document.getElementById("header");
-        header.style.opacity = 0;
     });
 
     var app = WinJS.Application;
@@ -66,7 +63,7 @@
                     // (issue: position: absolute on the datesContainer messes with the enterPage animation when 
                     //  running on the controlHost)
                     //WinJS.UI.Animation.enterPage([[header], [datesContainer]], null);
-                    WinJS.UI.Animation.enterPage([[header], [contentHost]], null);
+                    WinJS.UI.Animation.enterPage([contentHost], null);
 
                     console.log("Splash screen dismissed.");
                 });

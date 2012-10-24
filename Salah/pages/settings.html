@@ -4,17 +4,34 @@
         <title></title>
         <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
         <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
-
-        <script src="settings.js"></script>
+        
         <script src="/js/LocationControl.js"></script>
+        <script src="background-data.js"></script>
+        <script src="settings.js"></script>
         <link rel="stylesheet" href="/css/LocationControl.css" />
 		<link rel="stylesheet" href="settings.css" />
     </head>
     <body>
+        <div id="header">
+            <h1>Settings</h1>
+        </div>
         <div id="settingsContainer">
             <div id="locationSetting">
-                <!--<h2>Location</h2>-->
-                <div id="locationControlHost" />
+                <h2 class="settingTitle">Location</h2>
+                <div id="locationControlHost"></div>
+            </div>
+
+            <div id="backgroundSetting">
+                <h2 class="settingTitle">Background</h2>
+            </div>
+        </div>
+
+        <div id="backgroundItemTemplate" style="display: none">
+            <img src="#" data-win-bind="src: thumb; title: title" />
+            <div>
+                <h2 data-win-bind="innerText: title"></h2>
+                <h3 data-win-bind="innerText: location"></h3>
+                <p>By <a data-win-bind="innerText: auth; href: authURL"></a></p>
             </div>
         </div>
     </body>

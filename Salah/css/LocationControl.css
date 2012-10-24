@@ -1,8 +1,10 @@
 ﻿.mapContainer {
+
 	-ms-flex-direction: row;
 	-ms-flex-align: center;
 	background-repeat: repeat;
 	/*background-clip: content-box;*/
+    border: 1px solid rgba(0, 0, 0, 0.55);
     background-clip: border-box;
     background-size: 1000px 1000px;
 	display: -ms-flexbox;
@@ -15,7 +17,7 @@
 }
 
 .dimmer {
-	background: rgba(0, 0, 0, .6);
+	background: rgba(0, 0, 0, .65);
 	height: 100%;
 	left: 0;
 	position: absolute;

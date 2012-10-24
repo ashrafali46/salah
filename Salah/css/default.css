@@ -1,8 +1,11 @@
 ﻿body {
-    /*background-color: #07411e;
-    background-color: #036a23;*/
+    /*background-color: #07411e;*/
+    /*background-color: #036a23;*/
     /*background-color: #00521b;*/
-    background-color: #57a115;
+    /*background-color: #57a115;*/
+    background-color: #124900;
+    background-image: url("/images/backgrounds/pattern150.png");
+    background-repeat: repeat;
 }
 
 #header {

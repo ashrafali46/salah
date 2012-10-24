@@ -440,11 +440,12 @@ LocationControl.prototype._setLocationAutoAsync = function () {
             }
 
             that._methodToggle.checked = false;
+            that._locationInput.disabled = false;
+            that._manualSubmit.disabled = false;
+
             autoLocationAttemptCompleteCallback(false);
         }).then(function() {
             that._progress.style.visibility = "hidden";
-            that._locationInput.disabled = false;
-            that._manualSubmit.disabled = false;
 
             that._request = null;
         });
