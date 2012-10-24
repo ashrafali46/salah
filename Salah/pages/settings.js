@@ -30,8 +30,10 @@ var x = new WinJS.UI.ListView();
             var listView = new WinJS.UI.ListView(listViewHost);
             listView.itemDataSource = backgroundListDataSource;
             listView.layout = { type: WinJS.UI.GridLayout };
-            var template = new WinJS.Binding.Template(element.querySelector("#backgroundItemTemplate"));
-            listView.itemTemplate = template.element;
+            listView.selectionMode = "single";
+            listView.tapBehavior = "directSelect";
+            //var template = new WinJS.Binding.Template(element.querySelector("#backgroundItemTemplate"));
+            listView.itemTemplate = itemTemplateFunction; //template.element;
             backgroundHost.appendChild(listViewHost);
             
             return new WinJS.Promise(function (complete, error, progress) {
@@ -54,4 +56,43 @@ var x = new WinJS.UI.ListView();
             });
         }
     });
+
+    function itemTemplateFunction(itemPromise) {
+        return itemPromise.then(function (item) {
+            var itemContainer = document.createElement("div");
+            itemContainer.className = "backgroundListItem";
+
+            var thumb = document.createElement("img");
+            thumb.src = "/images/backgrounds/thumbs/" + item.data.src;
+            thumb.alt = item.data.title;
+            itemContainer.appendChild(thumb);
+
+            var infoDiv = document.createElement("div");
+
+            var title = document.createElement("h2");
+            title.innerText = item.data.title;
+            infoDiv.appendChild(title);
+
+            var location = document.createElement("h3");
+            location.innerText = (item.data.location ? item.data.location : "");
+            infoDiv.appendChild(location);
+            
+            var author = document.createElement("p");
+            author.innerText = "By "
+            if (item.data.authURL) {
+                var link = document.createElement("a");
+                link.innerText = item.data.auth;
+                link.href = item.data.authURL;
+                author.appendChild(link)
+            } else {
+                author.innerText += item.data.auth;
+            }
+
+            infoDiv.appendChild(author);
+
+            itemContainer.appendChild(infoDiv);
+
+            return itemContainer;
+        });
+    };
 })();

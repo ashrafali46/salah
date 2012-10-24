@@ -30,3 +30,48 @@
 #backgroundSetting {
     width: 100%;
 }
+
+#backgroundSetting .win-listview {
+	height: 100%;
+	margin-left: -5px;
+}
+
+#backgroundSetting .win-container {
+    background: white;
+}
+
+#backgroundSetting .win-selected .win-selectioncheckmark,
+#backgroundSetting .win-selected .win-selectioncheckmarkbackground {	
+	display: none;
+}
+
+.backgroundListItem {
+	-ms-grid-columns: min-content max-content;
+	color: black;
+    display: -ms-grid;
+	padding: 10px;
+}
+
+.backgroundListItem img {
+	-ms-grid-column: 1;
+	-ms-grid-row: 1;	
+	height: 100px;
+	width: 100px;
+}
+
+.backgroundListItem div {
+	-ms-grid-column: 2;
+	-ms-grid-row: 1;
+	padding-left: 10px;
+	position: relative;
+}
+
+.backgroundListItem div p {
+	bottom: 0;
+	margin-bottom: 0;
+	position: absolute;
+}
+
+.backgroundListItem a {
+    color: #ac7aff;
+}
