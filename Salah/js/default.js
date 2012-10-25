@@ -2,6 +2,8 @@
 
 (function () {
     "use strict";
+
+    var INTERVAL = 60000, INITIAL_DELAY = 2800, salahUpdateInterval;
     
     // Location is undefined iff app is being run for the first time, we always want to go directly to app
     // settings if it ever is
@@ -20,7 +22,7 @@
 
         if (view == "settings") {
             // Set the visibility to hidden for the initial enter page animation
-            //settingsHost.style.visibility = "hidden";
+            settingsHost.style.visibility = "hidden";
             pageReadyPromise = WinJS.UI.Pages.render(
                 "/pages/settings.html",
                 document.getElementById("settingsHost"),
@@ -30,7 +32,7 @@
                     elementsToAnimate = [[settingsHost.querySelector(".header")], [settingsHost.querySelector("#settingsContainer")]];
                 });
         } else {
-            //salahHost.style.visibility = "hidden";
+            salahHost.style.visibility = "hidden";
             pageReadyPromise = WinJS.UI.Pages.render("/pages/salah.html", document.getElementById("salahHost")).then(function () {
                 elementsToAnimate = [[salahHost.querySelector(".header")], [salahHost.querySelector("#datesList")]];
             });
@@ -62,6 +64,17 @@
                     settingsHost.style.visibility = "visible";
                     salahHost.style.visibility = "visible";
                     WinJS.UI.Animation.enterPage(elementsToAnimate);
+
+                    if (view == "salah") {
+                        clearInterval(salahUpdateInterval);
+                        salahUpdateInterval = setInterval(function () {
+                            salahHost.winControl.updateDatesListAsync()
+                        }, INTERVAL);
+
+                        setTimeout(function () {
+                            salahHost.winControl.updateDatesListAsync();
+                        }, INITIAL_DELAY);
+                    }
                 });
             }
         }
@@ -94,6 +107,15 @@
                     settingsHost.style.display = "none";
                 });
             }
+           
+            clearInterval(salahUpdateInterval);
+            salahUpdateInterval = setInterval(function () {
+                salahControl.updateDatesListAsync()
+            }, INTERVAL);
+
+            setTimeout(function () {
+                salahControl.updateDatesListAsync();
+            }, INITIAL_DELAY);
 
             WinJS.UI.Animation.enterContent(animate);
             view = "salah";
@@ -104,8 +126,10 @@
         if (view == "settings")
             return;
 
+        clearInterval(salahUpdateInterval);
+
         var settingsPromise;
-        
+
         settingsHost.style.opacity = 0;
         if (!settingsLoaded) {
             settingsPromise = WinJS.UI.Pages.render("/pages/settings.html", settingsHost, { settingsFinishedCallback: showContent }).then(function (pageControl) {

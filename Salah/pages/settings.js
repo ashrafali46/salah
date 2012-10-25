@@ -223,7 +223,7 @@
             });
 
             this.locationControl.addEventListener("locationset", function (event) {
-                ApplicationSettings.location = event.detail.geolocation;
+                ApplicationSettings.location = event.detail.location;
                 ApplicationSettings.locationName = event.detail.locationName;
 
                 if (locationChosenCallback) {

@@ -5,11 +5,12 @@
         render: function (element, options, loadResult) {
             element.appendChild(loadResult);
 
+            element.querySelector("#locationName").innerText = ApplicationSettings.locationName;
+
             console.log("Setting up user interface");
 
-            var location = { latitude: 43.44, longitude: -80.31 };
             var method = PrayerCalculator.Methods.ISNA;
-            this._prayerCalculator = new PrayerCalculator(location, method);
+            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location, method);
 
             // ensure DOM ready
             this._datesList = element.querySelector("#datesList");
@@ -20,6 +21,7 @@
             var now = moment();
             this.addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
             this.addSalahTimes(now.toDate());
+            this.lastDateAdded = now;
 
             this.removeExpiredAsync(false).then(function () {
                 console.log("Removed expired prayers.");
@@ -239,8 +241,8 @@
 
                 function fillExtraSpace() {
                     while (this._datesList.scrollWidth <= this._datesList.offsetWidth) {
-                        var lastDate = this._datesList.lastElementChild;
-                        this.addSalahTimes(moment(lastDate.date).add('d', 1).toDate(), true);
+                        this.lastDateAdded.add('d', 1); // increment the lastDateAdded
+                        this.addSalahTimes(this.lastDateAdded.toDate(), true);
                     }
                     complete();
                 }

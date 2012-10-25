@@ -390,7 +390,7 @@ var LocationControl = (function() {
                 }
 
                 // Save the location values
-                that.location = location;
+                that.location = locationObject;
                 that.locationName = result.locationName;
             
                 // Hide the marker, and center the map on the location
@@ -400,7 +400,7 @@ var LocationControl = (function() {
                 });
 
                 // Dispatch location set event
-                that._dispatchLocationSet(location, result.locationName);
+                that._dispatchLocationSet(locationObject, result.locationName);
             
                 // Hide the controls
                 that.setControlsVisibility(false);
@@ -517,8 +517,7 @@ var LocationControl = (function() {
     LocationControl.prototype._dispatchLocationSet = function (location, locationName) {
         /// <summary>Dispatches the locationset event to the host.</summary>
         var locationSetEvent = document.createEvent("CustomEvent");
-        // Can't use event.detail.location since that's reserved! (oops)
-        locationSetEvent.initCustomEvent("locationset", true, false, { geoposition: location, locationName: locationName });
+        locationSetEvent.initCustomEvent("locationset", true, false, { location: location, locationName: locationName });
         this.element.dispatchEvent(locationSetEvent);
     }
 
