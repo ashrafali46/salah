@@ -182,8 +182,6 @@
             });
 
             // Attach settingsFinishedCallback to the back button
-            var backButton = this.element.querySelector("#backButton");
-            backButton.blur();
             backButton.addEventListener("click", function () {
                 // hack that prevents this from firing when i press enter on the locationInput in the LocationControl
                 if (window.inputRecentlyEntered)
@@ -191,26 +189,19 @@
 
                 that._settingsFinishedCallback();
             });
-            /*backButton.addEventListener("focus", function () {
-                backButton.style.backgroundColor = "red";
-                setTimeout(function () {
-                    backButton.style.backgroundColor = "blue";
-                }, 1000);
-            });*/
 
             // Handle background item selection
             this.bgListView.addEventListener("iteminvoked", function (event) {
                 //var itemIndex = event.detail.itemIndex;
                 event.detail.itemPromise.then(function complete(item) {
                     that.bgListView.selection.set(item);
-
                     var imageURI = "/images/backgrounds/" + item.data.src;
-                    document.body.style.backgroundImage = "url('" + imageURI + "')";
 
-                    if (item.data.src == "pattern.png") {
-                        document.body.style.backgroundSize = "";
+                    var backgroundEl = document.getElementById("background");
+                    if (item.data.src.indexOf("pattern") == -1) {
+                        backgroundEl.style.backgroundImage = "url('" + imageURI + "')";
                     } else {
-                        document.body.style.backgroundSize = "cover";
+                        backgroundEl.style.backgroundImage = "none";
                     }
 
                     if (backgroundChosenCallback) {

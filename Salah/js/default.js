@@ -15,8 +15,26 @@
     var salahHost, settingsHost;
     var elementsToAnimate = [];
 
-    var pageReadyPromise;
+    var pageReadyPromise, backgroundLoadPromise;
     WinJS.Utilities.ready(function () {
+        // Set the page background
+        if (ApplicationSettings.background.indexOf("pattern") == -1) {
+            var backgroundLoaderImage = document.createElement("img");
+
+            var loadCallback;
+            backgroundLoadPromise = new WinJS.Promise(function (c) { loadCallback = c });
+            backgroundLoaderImage.addEventListener("load", function () {
+                var backgroundEl = document.getElementById("background");
+                backgroundEl.style.backgroundImage = "url('" + backgroundLoaderImage.src + "')";
+                backgroundLoaderImage = null;
+                loadCallback();
+            });
+
+            backgroundLoaderImage.src = "/images/backgrounds/" + ApplicationSettings.background;
+        } else {
+            backgroundLoadPromise = WinJS.Promise.wrap(null);
+        }
+
         salahHost = document.getElementById("salahHost");
         settingsHost = document.getElementById("settingsHost");
 
@@ -53,7 +71,7 @@
             console.log("App launched. Last state: " + eventArgs.detail.previousExecutionState);
             if (eventArgs.detail.previousExecutionState != activation.ApplicationExecutionState.running) {
                 // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
-                eventArgs.setPromise(pageReadyPromise);
+                eventArgs.setPromise(WinJS.Promise.join([pageReadyPromise, backgroundLoadPromise]));
 
                 var splash = eventArgs.detail.splashScreen;
                 /* The app splashscreen is torn down as soon as the activated callback returns, or, alternatively

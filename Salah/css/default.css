@@ -5,6 +5,8 @@
 }
 
 #background {
+    background-position: center;
+    background-size: cover;
     height: 100%;
     left: 0px;
     position: absolute;
