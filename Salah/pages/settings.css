@@ -36,12 +36,13 @@
 }
 
 #backgroundSetting {
-    width: 100%;
+    overflow: hidden;
+    min-width: 100%;
 }
 
 #backgroundSetting .win-listview {
 	height: 100%;
-	margin-left: -5px;
+	/*margin-left: -5px;*/
     margin-top: -5px;
 }
 
@@ -57,11 +58,11 @@
 .backgroundListItem {
 	background-clip: border-box;
     background-repeat: no-repeat;
-    background-position: -1px -1px;
+    background-position: -11px -11px;
 	border: 1px solid rgba(0, 0, 0, 0.65);
-	height: 258px;
+	height: 238px;
 	overflow: hidden;
-	width: 258px;
+	width: 238px;
 }
 
 .backgroundListItem div {

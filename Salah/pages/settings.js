@@ -165,18 +165,38 @@
                 if (that._applicationFirstRun) {
                     var continueEl = that.element.querySelector("#continue");
                     continueEl.style.visibility = "visible";
-                    WinJS.UI.Animation.enterContent(continueEl).then(function () {
-                        continueEl.style.visibility = "";
-                        continueEl.style.opacity = "";
-                    });
+                    WinJS.UI.Animation.enterContent(continueEl);
 
                     var continueButton = that.element.querySelector("#continueButton");
-                    continueButton.addEventListener("click", that._settingsFinishedCallback);
+                    continueButton.addEventListener("click", function () {
+                        // For some reason if we try using exitContent on the parent page control, this 
+                        // persists on the screen (it's not faded out)
+                        continueButton.disabled = true;
+                        WinJS.UI.Animation.exitContent(continueEl);
+                        that._settingsFinishedCallback();
+
+                        // Make sure the backbutton is shown now
+                        that._backButton.disabled = false;
+                    });
                 }
             });
 
             // Attach settingsFinishedCallback to the back button
-            this.element.querySelector("#backButton").addEventListener("click", this._settingsFinishedCallback);
+            var backButton = this.element.querySelector("#backButton");
+            backButton.blur();
+            backButton.addEventListener("click", function () {
+                // hack that prevents this from firing when i press enter on the locationInput in the LocationControl
+                if (window.inputRecentlyEntered)
+                    return;
+
+                that._settingsFinishedCallback();
+            });
+            /*backButton.addEventListener("focus", function () {
+                backButton.style.backgroundColor = "red";
+                setTimeout(function () {
+                    backButton.style.backgroundColor = "blue";
+                }, 1000);
+            });*/
 
             // Handle background item selection
             this.bgListView.addEventListener("iteminvoked", function (event) {
@@ -198,13 +218,13 @@
                         backgroundChosenCallback = null;
                     }
 
-                    //ApplicationSettings.background = item.data.src;
+                    ApplicationSettings.background = item.data.src;
                 });
             });
 
             this.locationControl.addEventListener("locationset", function (event) {
-                //ApplicationSettings.location = event.detail.location;
-                //ApplicationSettings.locationName = event.detail.locationName;
+                ApplicationSettings.location = event.detail.geolocation;
+                ApplicationSettings.locationName = event.detail.locationName;
 
                 if (locationChosenCallback) {
                     locationChosenCallback();

@@ -5,24 +5,42 @@
     
     // Location is undefined iff app is being run for the first time, we always want to go directly to app
     // settings if it ever is
-    var view;
+    var view, settingsLoaded = false;
+
     var location = ApplicationSettings.location;
     view = (location === undefined) ? "settings" : "salah";
 
+    var salahHost, settingsHost;
+    var elementsToAnimate = [];
+
     var pageReadyPromise;
     WinJS.Utilities.ready(function () {
+        salahHost = document.getElementById("salahHost");
+        settingsHost = document.getElementById("settingsHost");
+
         if (view == "settings") {
+            // Set the visibility to hidden for the initial enter page animation
+            //settingsHost.style.visibility = "hidden";
             pageReadyPromise = WinJS.UI.Pages.render(
-                "/pages/settings.html", 
-                document.getElementById("settingsHost"), 
-                { settingsFinishedCallback: showContent });
+                "/pages/settings.html",
+                document.getElementById("settingsHost"),
+                { settingsFinishedCallback: showContent }).then(function () {
+                    settingsLoaded = true;
+                }).then(function () {
+                    elementsToAnimate = [[settingsHost.querySelector(".header")], [settingsHost.querySelector("#settingsContainer")]];
+                });
         } else {
-            pageReadyPromise = WinJS.UI.Pages.render("/pages/salah.html", document.getElementById("salahHost"));
+            //salahHost.style.visibility = "hidden";
+            pageReadyPromise = WinJS.UI.Pages.render("/pages/salah.html", document.getElementById("salahHost")).then(function () {
+                elementsToAnimate = [[salahHost.querySelector(".header")], [salahHost.querySelector("#datesList")]];
+            });
         }
     }, false);
 
     var app = WinJS.Application;
     app.addEventListener("activated", activatedHandler);
+    setupSettings();
+    //app.addEventListener("settings", settingsHandler);
     app.start();
     
     function activatedHandler(eventArgs) {
@@ -33,7 +51,6 @@
             console.log("App launched. Last state: " + eventArgs.detail.previousExecutionState);
             if (eventArgs.detail.previousExecutionState != activation.ApplicationExecutionState.running) {
                 // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
-
                 eventArgs.setPromise(pageReadyPromise);
 
                 var splash = eventArgs.detail.splashScreen;
@@ -41,25 +58,74 @@
                    when the promise set with eventArgs.setPromise() completes */
                 splash.addEventListener("dismissed", function () {
                     console.log("Splash screen dismissed.");
+
+                    settingsHost.style.visibility = "visible";
+                    salahHost.style.visibility = "visible";
+                    WinJS.UI.Animation.enterPage(elementsToAnimate);
                 });
             }
         }
     }
 
+    function setupSettings() {
+        var AppSettings = Windows.UI.ApplicationSettings;
+        var settingsPane = AppSettings.SettingsPane.getForCurrentView();
+
+        settingsPane.addEventListener("commandsrequested", function(event) {
+            var appCommands = event.detail[0].request.applicationCommands;
+
+            var settingsCommand = new AppSettings.SettingsCommand("settings", "Settings", showSettings);
+            appCommands.append(settingsCommand);
+        });
+    }
+
     function showContent() {
+        if (view == "salah")
+            return;
+
         // Remove salah and reshow them
-        var salahHost = document.getElementById("salahHost");
         WinJS.Utilities.empty(salahHost);
+        salahHost.style.display = "block";
+        salahHost.style.opacity = 0;
         var animate = [];
         WinJS.UI.Pages.render("/pages/salah.html", salahHost, { animatableElements: animate }).then(function (salahControl) {
-            if (view == "settings")
-                WinJS.UI.Animation.exitContent(document.getElementById("settingsHost"));
+            if (view == "settings") {
+                WinJS.UI.Animation.exitContent(settingsHost).then(function () {
+                    settingsHost.style.display = "none";
+                });
+            }
 
             WinJS.UI.Animation.enterContent(animate);
             view = "salah";
         });
     }
+
+    function showSettings() {
+        if (view == "settings")
+            return;
+
+        var settingsPromise;
         
+        settingsHost.style.opacity = 0;
+        if (!settingsLoaded) {
+            settingsPromise = WinJS.UI.Pages.render("/pages/settings.html", settingsHost, { settingsFinishedCallback: showContent }).then(function (pageControl) {
+                settingsLoaded = true;
+                return pageControl.element;
+            });
+        } else {
+            settingsPromise = WinJS.Promise.wrap(settingsHost);
+        }
+
+        settingsPromise.then(function () {
+            WinJS.UI.Animation.exitContent(salahHost).then(function() {
+                salahHost.style.display = "none";
+            });
+            settingsHost.style.display = "block";
+            WinJS.UI.Animation.enterContent(settingsHost);
+
+            view = "settings";
+        });
+    }
 })();
 
 
