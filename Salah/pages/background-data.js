@@ -5,7 +5,7 @@ var backgroundListDataSource = (function () {
     var data = [{
         title: "Islamic Geometric Pattern",
         location: null,
-        auth: "Bay Vakoof",
+        auth: "Bayvakoof",
         authURL: null,
         src: "pattern.png"
     },
@@ -19,7 +19,7 @@ var backgroundListDataSource = (function () {
     {
         title: "Laleli Mosque",
         location: "Turkey",
-        auth: "Edal Lefterov",
+        auth: "Anton Lefterov",
         authURL: "http://commons.wikimedia.org/wiki/User:Edal",
         src: "laleli-mosque.jpg"
     },

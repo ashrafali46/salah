@@ -68,6 +68,7 @@ label.dateStamp {
 
 .salahList h2 {
     padding: 0 30px 25px 30px;
+    white-space: nowrap; /* prevent wrapping and just let them overflow */
 }
 
 .current h2 {
@@ -96,4 +97,58 @@ label.dateStamp {
     transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
+}
+
+/* Snapped view */
+@media screen and (-ms-view-state: snapped) {
+    .salahPage .header {        
+        margin-left: 20px;
+        margin-top: 20px;
+    }
+
+    /* Override snapped view state css changes in metro style */
+	.salahPage .header h1, .salahList h1 {
+		font-size: 42pt;
+		font-weight: 200;
+		line-height: 1.1429;
+	}
+
+    .salahPage header h2, .salahList h2 {
+		font-size: 20pt;
+		font-weight: 200;
+		line-height: 1.2; /* 32px when font-size is 20pt */
+	}
+
+    #datesListContainer {
+        top: 0px;
+    }
+
+    #datesList {
+        -ms-flex-direction: column;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        padding: 120px 20px 0 20px;
+    }
+
+    #datesList > li {
+        display: block;
+        visibility: hidden;
+    }
+
+    #datesList > li:first-child {
+        visibility: visible;
+    }
+
+    .salahList {
+        -ms-flex-direction: column;
+    }
+
+    .salahList > li {
+        margin-bottom: 2px;
+    }
+
+    .salahList > li:last-child {
+        margin-right: 0;
+        margin-bottom: 40px;
+    }
 }

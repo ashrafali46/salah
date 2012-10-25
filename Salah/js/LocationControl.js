@@ -236,10 +236,10 @@ var LocationControl = (function() {
             }
 
             centerMapPromise.then(function () {
-                /*if (options && options.autoMethod) {
+                if (options && options.autoMethod) {
                     // Start getting location automatically
                     that._setLocationAutoAsync();
-                }*/
+                }
             
                 // Give a small timeout so the background image won't pop in
                 setTimeout(function () {
@@ -451,15 +451,23 @@ var LocationControl = (function() {
 
                 // Try to geocode the location to get the location name
                 // Use mapquest reverse geo!
-                var geocodeRequestURI = "http://open.mapquestapi.com/nominatim/v1/reverse?format=json&lat=" + location.coordinate.latitude +
-                    "&lon=" + location.coordinate.longitude + "&zoom=10&addressdetails=1";
+                /*var geocodeRequestURI = "http://open.mapquestapi.com/nominatim/v1/reverse?format=json&lat=" + location.coordinate.latitude +
+                    "&lon=" + location.coordinate.longitude + "&zoom=10&addressdetails=1";*/
+                var geocodeRequestURI = "http://www.mapquestapi.com/geocoding/v1/reverse?key=Fmjtd%7Cluuanu0r29%2Cax%3Do5-96b5gu" +
+                    "&lat=" + location.coordinate.latitude + "&lng=" + location.coordinate.longitude;
                 var geocodeXhr = WinJS.xhr({ url: geocodeRequestURI, headers: { "User-Agent": userAgent } });
                 WinJS.Promise.timeout(XHR_TIMEOUT, geocodeXhr).then(
                     function (xhr) {
                         try {
-                            var response = JSON.parse(xhr.responseText);
-                            var address = response.address;
-                            var placeName = (address.city || address.town) + (address.state ? ", " + address.state : "") + (address.country ? ", " + address.country : "");
+                            var placeName = null;
+                            var response = JSON.parse(xhr.responseText);                           
+                            for (var i = 0; i < response.results.length; i++) {
+                                var result = response.results[i];
+                                var location = result.locations[0];
+                                placeName = (location.adminArea5) + (location.adminArea3 ? ", " + location.adminArea3 : "") + (location.adminArea1 ? ", " + location.adminArea1 : "");
+                                break;
+                            }
+
                             locationNameObtainedCallback(placeName);
                         } catch (error) {
                             locationNameObtainedCallback(null);

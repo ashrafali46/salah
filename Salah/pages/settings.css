@@ -1,4 +1,19 @@
-﻿#backButton {
+﻿#snappedBlocker {
+    background-color: #005a0b;
+    background-image: url("/images/splashscreen.png");
+    background-position: center;
+    background-repeat: repeat-x;
+    background-size: 620px 300px;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+    width: 100%;
+    z-index: 10;
+}
+
+#backButton {
 	margin-right: 20px;
 	margin-left: -60px;
 }
@@ -38,11 +53,13 @@
 #backgroundSetting {
     overflow: hidden;
     min-width: 100%;
+    padding-left: 5px;
+    padding-bottom: 20px;
 }
 
 #backgroundSetting .win-listview {
 	height: 100%;
-	/*margin-left: -5px;*/
+    margin-left: -5px;
     margin-top: -5px;
 }
 
@@ -55,10 +72,15 @@
 	display: none;
 }
 
+#backgroundSetting .win-selectionborder {
+    border-width: 5px;
+}
+
 .backgroundListItem {
 	background-clip: border-box;
     background-repeat: no-repeat;
     background-position: -11px -11px;
+    background-size: 260px 260px;
 	border: 1px solid rgba(0, 0, 0, 0.65);
 	height: 238px;
 	overflow: hidden;
@@ -72,6 +94,10 @@
 	position: absolute;
 	width: 100%;
 }
+
+/*.win-selected .backgroundListItem div {
+
+}*/
 
 .backgroundListItem div h2 {
 	padding: 10px 10px 0 10px;
@@ -137,4 +163,10 @@
     font-weight: normal;
     content: "\E0AE";
     vertical-align: 50%;
+}
+
+@media screen and (-ms-view-state: snapped) {
+    #snappedBlocker {
+        visibility: visible;
+    }
 }

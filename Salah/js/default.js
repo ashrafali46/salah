@@ -18,7 +18,7 @@
     var pageReadyPromise, backgroundLoadPromise;
     WinJS.Utilities.ready(function () {
         // Set the page background
-        if (ApplicationSettings.background.indexOf("pattern") == -1) {
+        if (ApplicationSettings.background && ApplicationSettings.background.indexOf("pattern") == -1) {
             var backgroundLoaderImage = document.createElement("img");
 
             var loadCallback;

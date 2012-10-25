@@ -29,6 +29,10 @@
                 this._backButton = element.querySelector("#backButton");
                 this._backButton.disabled = true;
 
+                // Set a bit more informative titles on settings elements
+                element.querySelector("#locationSetting .title").innerText = "Set your Location";
+                element.querySelector("#backgroundSetting .title").innerText = "Choose a Background";
+
                 locationOptions = {};
             } else {
                 locationOptions = {
@@ -149,7 +153,7 @@
 
             var innerElementHeight = Math.min(1000, (window.innerHeight - (180 + 120)));
             locationControlHost.style.height = innerElementHeight + "px";
-            backgroundSetting.style.height = (innerElementHeight + 60) + "px";
+            //backgroundSetting.style.height = (innerElementHeight + 60) + "px";
         },
 
         ready: function (element, options) {

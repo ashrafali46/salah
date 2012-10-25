@@ -145,6 +145,8 @@
         removeExpiredAsync: function (animate) {
             console.log("Removing expired prayers.");
 
+            var that = this;
+
             // behavior: if coming back to the app (alt-tabbing/minimize maximize) after a long period
             // enumerate expired times: if 1 then swipe remove, more than 1 fast delete all
 
@@ -208,7 +210,7 @@
 
                     WinJS.Promise.join(animPromises).done(function () {
                         for (var e = 0; e < expiredDates.length; e++) {
-                            this._datesList.removeChild(expiredDates[e]);
+                            that._datesList.removeChild(expiredDates[e]);
                         }
 
                         complete();
@@ -229,6 +231,10 @@
         },
 
         fillDatesListAsync: function () {
+            // TODO: In a snapped view state we can't measure horizontally
+            if (Windows.UI.ViewManagement.ApplicationView.value == Windows.UI.ViewManagement.ApplicationViewState.snapped)
+                return WinJS.Promise.wrap(null);
+
             console.log("Filling the datesList.");
             return new WinJS.Promise(function (complete, error, progress) {
                 fillExtraSpace = fillExtraSpace.bind(this);
@@ -240,6 +246,9 @@
                 }
 
                 function fillExtraSpace() {
+                    if (this._datesList.scrollWidth == 0 || this._datesList.offsetWidth == 0)
+                        complete();
+
                     while (this._datesList.scrollWidth <= this._datesList.offsetWidth) {
                         this.lastDateAdded.add('d', 1); // increment the lastDateAdded
                         this.addSalahTimes(this.lastDateAdded.toDate(), true);
@@ -257,7 +266,9 @@
             if (!this._lastUpdateTime)
                 this._lastUpdateTime = new Date();
 
-            return this.removeExpiredAsync(true).then(function () {
+            var animate = !(Windows.UI.ViewManagement.ApplicationView.value == Windows.UI.ViewManagement.ApplicationViewState.snapped);
+
+            return this.removeExpiredAsync(animate).then(function () {
                 updateDateStamps();
 
                 var current = getCurrentPrayer();
@@ -297,7 +308,11 @@
 
                 // check if a prayer is current
                 // note there is not necessarily always a current prayer (think about time after sunrise and before dhuhr)
-                var candidate = that._datesList.firstElementChild.getElementsByClassName("salahList")[0].firstElementChild;
+                var todaysSalah = that._datesList.firstElementChild;
+                if (!todaysSalah || !todaysSalah.getElementsByClassName("salahList")[0].firstElementChild)
+                    return null;
+
+                var candidate = todaysSalah.getElementsByClassName("salahList")[0].firstElementChild;
                 if (candidate.time < now) {
                     return candidate;
                 }
@@ -394,6 +409,9 @@
             // is using mouse input (not touch). This is because in the case when the user drags the scroll bar 
             // to scroll, the list jerks (due to conflicting scrollLeft and mouse position) after adding some
             // more prayer times
+
+            if (Windows.UI.ViewManagement.ApplicationView.value == Windows.UI.ViewManagement.ApplicationViewState.snapped)
+                return;
 
             // check if user has scrolled within THRESHOLD pixels of end
             var endDistance = (this._datesList.scrollWidth - this._datesList.offsetWidth) - this._datesList.scrollLeft;
