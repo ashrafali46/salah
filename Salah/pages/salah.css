@@ -145,6 +145,7 @@ label.dateStamp {
 
     .salahList > li {
         margin-bottom: 2px;
+        overflow: hidden;
     }
 
     .salahList > li:last-child {

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-  <Identity Name="62034Bayvakoof.Salah" Version="1.0.0.1" Publisher="CN=34FDEA86-1BFE-41CB-A0AA-1CD4DF894240" />
+  <Identity Name="62034Bayvakoof.Salah" Version="1.0.0.2" Publisher="CN=34FDEA86-1BFE-41CB-A0AA-1CD4DF894240" />
   <Properties>
     <DisplayName>Salah</DisplayName>
     <PublisherDisplayName>Bayvakoof</PublisherDisplayName>
@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" StartPage="default.html">
-      <VisualElements DisplayName="Salah" Logo="images\logo.png" SmallLogo="images\smalllogo.png" Description="A quick and visually appealing way to view the current and upcoming islamic prayer times. As always, please use discretion when determining the appropriate time to pray." ForegroundText="light" BackgroundColor="#005a0b">
+      <VisualElements DisplayName="Salah" Logo="images\logo.png" SmallLogo="images\smalllogo.png" Description="A quick and visually appealing way to view the current and upcoming Islamic Salah times for your location. Prayer times are calculated using conventions determined by the Islamic Society of North America (ISNA). As always, please use discretion when determining the appropriate time to pray!" ForegroundText="light" BackgroundColor="#005a0b">
         <DefaultTile ShowName="allLogos" />
         <SplashScreen Image="images\splashscreen.png" />
         <InitialRotationPreference>

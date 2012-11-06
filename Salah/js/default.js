@@ -59,8 +59,7 @@
 
     var app = WinJS.Application;
     app.addEventListener("activated", activatedHandler);
-    setupSettings();
-    //app.addEventListener("settings", settingsHandler);
+    setupSettingsCharm();
     app.start();
     
     function activatedHandler(eventArgs) {
@@ -98,7 +97,7 @@
         }
     }
 
-    function setupSettings() {
+    function setupSettingsCharm() {
         var AppSettings = Windows.UI.ApplicationSettings;
         var settingsPane = AppSettings.SettingsPane.getForCurrentView();
 
@@ -107,6 +106,12 @@
 
             var settingsCommand = new AppSettings.SettingsCommand("settings", "Settings", showSettings);
             appCommands.append(settingsCommand);
+
+            var privacyCommand = new AppSettings.SettingsCommand("privacy", "Privacy Policy", function () {
+                var uri = new Windows.Foundation.Uri("http://sites.google.com/site/salahprivacypolicy/");
+                Windows.System.Launcher.launchUriAsync(uri);
+            });
+            appCommands.append(privacyCommand);
         });
     }
 
@@ -170,52 +175,36 @@
     }
 })();
 
+/*var ApplicationViews = { salah: "salah", settings: "settings" };
 
-/*
-    // Regardless of activation/launch type, I will always want to display the same content (fresh salah times)
-    //WinJS.Utilities.ready(function () { setupUI(uiSetupCompletedCallback);});
-    WinJS.Utilities.ready(function () {
-        console.log("DOM Ready.");
+(function() {
+    "use strict";
 
-        var fc = function() {
-            console.log("Settings finished");
-            WinJS.UI.Animation.exitContent(settingsHost).then(function () {
-                settingsHost.style.display = "none";
-                var salahHost = document.getElementById("salahHost");
-                WinJS.UI.Pages.render("pages/salah.html", salahHost).then(function (salahControl) {
-                    WinJS.UI.Animation.enterContent([salahHost.querySelector("#header"), salahHost.querySelector("#datesListContainer")]);
+    var appView;
 
-                    var INTERVAL = 60000;
-                    setInterval(function () {
-                        salahControl.updateDatesListAsync()
-                    }, INTERVAL);
+    initUserInterface();
 
-                    var INITIAL_DELAY = 2800;
-                    setTimeout(function () {
-                        salahControl.updateDatesListAsync();
-                    }, INITIAL_DELAY);
-                });
-            });
-        }
+    function initUserInterface() {
+        // If we haven't got location information to display salah we need to show settings
+        appView = (ApplicationSettings.location === undefined) ? ApplicationViews.settings : ApplicationViews.salah;
 
-        settingsHost = document.getElementById("settingsHost");
-        settingsHost.style.opacity = 0;
-        pageRenderedPromise = WinJS.UI.Pages.render("pages/settings.html", settingsHost, { finishCallback: fc });
-        /*WinJS.UI.Pages.render("pages/salah.html", controlHost).then(function (salahControl) {
-            datesContainer = controlHost.querySelector("#datesListContainer");
+        WinJS.Utilities.ready(function () {
+            var contentHost = document.getElementById("contentHost");
 
-            // Opacity 0 so it fades in with the enterPage animation
-            //datesContainer.style.opacity = 0;
+            // When the document has loaded we display the corresponding page control
+            if (appView == ApplicationViews.settings) {
 
-            var INTERVAL = 60000;
-            setInterval(function () {
-                salahControl.updateDatesListAsync()
-            }, INTERVAL);
+            } else if (appView == ApplicationViews.salah) {
 
-            var INITIAL_DELAY = 2800;
-            setTimeout(function() {
-                salahControl.updateDatesListAsync();
-            }, INITIAL_DELAY);
+            }
         });
-});*/
-    
+    }
+
+    function displaySalahControl() {
+
+    }
+
+    function displaySettingsControl() {
+
+    }
+})();*/

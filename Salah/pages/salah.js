@@ -19,8 +19,8 @@
             console.log("Adding yesterdays and todays salahs.");
             var yesterday = moment().add('d', -1);
             var now = moment();
-            this.addSalahTimes(yesterday.toDate()); // load all of yesterday's times in case last night's isha is still in effect
-            this.addSalahTimes(now.toDate());
+            this.addSalahTimesAsync(yesterday.toDate(), false); // load all of yesterday's times in case last night's isha is still in effect
+            this.addSalahTimesAsync(now.toDate(), false);
             this.lastDateAdded = now;
 
             this.removeExpiredAsync(false).then(function () {
@@ -49,7 +49,7 @@
 
         },
 
-        addSalahTimes: function (date, animate) {
+        addSalahTimesAsync: function (date, animate) {
             var times = this._prayerCalculator.calculateTimes(date);
             var time; // iterator
 
@@ -66,7 +66,7 @@
             // Create the outer <li> date element
             var prayerDate = document.createElement("li");
             this._datesList.appendChild(prayerDate);
-            prayerDate.id = date.toDateString();
+            prayerDate.id = this.toDateId(date);
             prayerDate.date = date;
             prayerDate.className = "date";
 
@@ -140,6 +140,13 @@
                 // ensure salahTime has a width set (for proper first animation)
                 salahTime.style.width = getComputedStyle(salahTime).width;
             }
+
+            if (animate) {
+                prayerDate.style.opacity = 0;
+                return WinJS.UI.Animation.enterContent(prayerDate);
+            } else {
+                return WinJS.Promise.as(null);
+            }
         },
 
         removeExpiredAsync: function (animate) {
@@ -164,7 +171,7 @@
 
                 for (var i = 0; i < salahs.length; i++) {
                     var salah = salahs.item(i);
-                    if (salah.expiry.getTime() < Date.now()) {
+                    if (salah.expiry < new Date()) {
                         expiredSalahs.push(salah);
                     } else {
                         //console.log(salah.firstElementChild.innerText + " is current/next prayer");
@@ -188,7 +195,8 @@
                     d++;
             }
 
-            if (animate) {
+            // Only use animation when 1 prayer has expired
+            if (animate && expiredSalahs.length == 1) {
                 return new WinJS.Promise(function (complete, error, progress) {
                     var animPromises = [];
 
@@ -239,7 +247,7 @@
             return new WinJS.Promise(function (complete, error, progress) {
                 fillExtraSpace = fillExtraSpace.bind(this);
                 if (this._datesList.getElementsByTagName("li").length == 0) {
-                    this.addSalahTimes(new Date());
+                    this.addSalahTimesAsync(new Date(), true);
                     this.removeExpiredAsync(false).then(fillExtraSpace);
                 } else {
                     fillExtraSpace();
@@ -251,7 +259,7 @@
 
                     while (this._datesList.scrollWidth <= this._datesList.offsetWidth) {
                         this.lastDateAdded.add('d', 1); // increment the lastDateAdded
-                        this.addSalahTimes(this.lastDateAdded.toDate(), true);
+                        this.addSalahTimesAsync(this.lastDateAdded.toDate(), true);
                     }
                     complete();
                 }
@@ -369,12 +377,12 @@
 
                 // check if we've transitioned to a new day
                 if (that._lastUpdateTime.toDateString() != now.toDateString()) {
-                    var yesterday = moment(now).subtract('d', 1).toDate();
-                    var tomorrow = moment(now).add('d', 1).toDate();
+                    var yesterday = moment().subtract('d', 1).toDate();
+                    var tomorrow = moment().add('d', 1).toDate();
 
-                    var yesterdayEl = that._datesList.getElementById(yesterday.toLocaleDateString());
-                    var todayEl = that._datesList.getElementById(now.toLocaleDateString());
-                    var tomorrowEl = that._datesList.getElementById(tomorrow.toLocaleDateString());
+                    var yesterdayEl = that._datesList.querySelector("#" + that.toDateId(yesterday));
+                    var todayEl = that._datesList.querySelector("#" + that.toDateId(now));
+                    var tomorrowEl = that._datesList.querySelector("#" + that.toDateId(tomorrow));
 
                     if (yesterdayEl)
                         replaceDateStamp(yesterdayEl, "Yesterday");
@@ -421,10 +429,15 @@
                 // add an additional date to the list
                 setImmediate(function () {
                     var lastDate = this._datesList.lastElementChild.date;
-                    this.addSalahTimes(moment(lastDate).add('d', 1).toDate());
+                    this.addSalahTimesAsync(moment(lastDate).add('d', 1).toDate(), false);
                     setSnapPoints(); // reset snap points
                 }.bind(this));
             }
+        },
+
+        toDateId: function (date) {
+            // HTML 4 Spec neccesitates ids to start with a letter
+            return "date" + moment(date).format("MMDDYYYY");
         }
     });
 
@@ -481,5 +494,4 @@
         }
         datesList.style.msScrollSnapPointsX = "snapList(" + snapPoints.toString() + ")";
     }
-
 })();
