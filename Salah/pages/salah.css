@@ -26,14 +26,7 @@
 	-ms-flex-direction: column;
     
 	display: -ms-flexbox;
-    /*opacity: 0.7;*/
-    /* do not set a margin on list items in the datesList, 
-       rather set it on the last salah child of a datesList list item*/
 }
-
-/*#datesList > li:first-child {
-    opacity: 1;
-}*/
 
 .salahList {
 	-ms-flex-direction: row;
@@ -54,12 +47,18 @@ label.dateStamp {
 }
 
 .salahList > li {
-	background: rgba(0, 0, 0, 0.68);
+	background-color: rgba(0, 0, 0, 0.8);
 	margin-right: 2px;
+    transition: background-color .3s linear, color .3s linear;
 }
 
 .salahList > li:last-child {
     margin-right: 40px;
+}
+
+.salahList > li.expired {
+    background-color: rgba(0, 0, 0, 0.45);
+    color: rgba(255, 255, 255, 0.55);
 }
 
 .salahList h1 {
@@ -97,59 +96,4 @@ label.dateStamp {
     transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
-}
-
-/* Snapped view */
-@media screen and (-ms-view-state: snapped) {
-    .salahPage .header {        
-        margin-left: 20px;
-        margin-top: 20px;
-    }
-
-    /* Override snapped view state css changes in metro style */
-	.salahPage .header h1, .salahList h1 {
-		font-size: 42pt;
-		font-weight: 200;
-		line-height: 1.1429;
-	}
-
-    .salahPage header h2, .salahList h2 {
-		font-size: 20pt;
-		font-weight: 200;
-		line-height: 1.2; /* 32px when font-size is 20pt */
-	}
-
-    #datesListContainer {
-        top: 0px;
-    }
-
-    #datesList {
-        -ms-flex-direction: column;
-        overflow-x: hidden;
-        overflow-y: scroll;
-        padding: 120px 20px 0 20px;
-    }
-
-    #datesList > li {
-        display: block;
-        visibility: hidden;
-    }
-
-    #datesList > li:first-child {
-        visibility: visible;
-    }
-
-    .salahList {
-        -ms-flex-direction: column;
-    }
-
-    .salahList > li {
-        margin-bottom: 2px;
-        overflow: hidden;
-    }
-
-    .salahList > li:last-child {
-        margin-right: 0;
-        margin-bottom: 40px;
-    }
 }

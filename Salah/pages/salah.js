@@ -2,54 +2,106 @@
     "use strict";
 
     WinJS.UI.Pages.define("/pages/salah.html", {
+        enterContentAnimationElements: null,
+
+        _options: {
+            // If true salah are removed as they expire, otherwise dates are removed only
+            // when all salah on that date have expired
+            removeExpiredSalah: false,
+            // The number of days in the future that salah will displayed for
+            futureDayDisplayCount: Number.POSITIVE_INFINITY, 
+            salahUpdateInterval: 60000
+        },
+        
+        _lastDateAdded: null,
+        _updateInterval: null,
+        _viewstate: "horizontal", // can either be "horizontal" or "vertical"
+        _scrollHandler: null,
+        _viewStateHandler: null,
+
         render: function (element, options, loadResult) {
+            // Copy options
+            if (options) {
+                for (var key in options) {
+                    this._options[key] = options[key];
+                }
+            }
+
             element.appendChild(loadResult);
 
+            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location, PrayerCalculator.Methods.ISNA);
+            this._datesList = element.querySelector("#datesList");
+            
+            // Set the enterPage animatable elements
+            this.enterContentAnimationElements = [element.querySelector(".header"), this._datesList];
+
+            // Set the locationName from settings
             element.querySelector("#locationName").innerText = ApplicationSettings.locationName;
 
-            console.log("Setting up user interface");
+            // Begin adding prayers to the page
+            this.addDate(moment().add('d', -1).toDate(), false); // Insert yesterday's times in case last night's isha is still in effect
+            var now = new Date();
+            this.addDate(now, false);
 
-            var method = PrayerCalculator.Methods.ISNA;
-            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location, method);
-
-            // ensure DOM ready
-            this._datesList = element.querySelector("#datesList");
-
-            // begin adding prayers to the page
-            console.log("Adding yesterdays and todays salahs.");
-            var yesterday = moment().add('d', -1);
-            var now = moment();
-            this.addSalahTimesAsync(yesterday.toDate(), false); // load all of yesterday's times in case last night's isha is still in effect
-            this.addSalahTimesAsync(now.toDate(), false);
-            this.lastDateAdded = now;
-
-            this.removeExpiredAsync(false).then(function () {
-                console.log("Removed expired prayers.");
-
-                // fill datesList with days so that salah times overflow the screen width
-                // we could also define a var that = this, and use .call to bind the correct this object to these function calls
-                // instead of using bind
-                this.fillDatesListAsync();
-
-                console.log("Filled datesList.");
-
-                if (options && options.animatableElements) {
-                    options.animatableElements.push(this.element.querySelector(".header"));
-                    options.animatableElements.push(this._datesList);
+            // Handle expired prayer/dates
+            var expired = this.getExpired();
+            if (this._options.removeExpiredSalah) {
+                // Removed expired salah elements
+                for (var s = 0; s < expired.salahs.length; s++) {
+                    var expiredSalah = expired.salahs[s];
+                    expiredSalah.parentNode.removeChild(expiredSalah);
                 }
+            }
 
-                // page is loaded with enough prayers
-                console.log("Completed document UI setup.")
-            }.bind(this));
+            // Remove fully expired dates
+            for (var d = 0; d < expired.dates.length; d++) {
+                this._datesList.removeChild(expired.dates[d]);
+            }
+
+            // Fill the datesList so it overflows the screen width
+            this.fill();
         },
 
         ready: function(element, options, loadResult) {
-            // Once rendering is complete we can measure lengths and attach handlers
-            this._datesList.addEventListener("scroll", this.datesListScrollHandler.bind(this));
+            // Register the update method
+            var that = this;
+            this._updateInterval = setInterval(function () {
+                that.updateAsync();
+            }, this._options.salahUpdateInterval);
 
+            // Register the scroll handler
+            this._scrollHandler = this.fill.bind(this);
+            this._datesList.addEventListener("scroll", this._scrollHandler);
+
+            this._viewStateHandler = function() {
+                var viewStates = Windows.UI.ViewManagement.ApplicationViewState;
+                var newViewState = Windows.UI.ViewManagement.ApplicationView.value;
+                if (newViewState === viewStates.snapped) {
+                    that._viewstate = "vertical";
+                } else {
+                    that._viewstate = "horizontal";
+                }
+            }
+            window.addEventListener("resize", this._viewStateHandler);
         },
 
-        addSalahTimesAsync: function (date, animate) {
+        unload: function () {
+            window.removeEventListener("resize", this._viewStateHandler);
+            this._datesList.removeEventListener("scroll", this._scrollHandler);
+            clearInterval(this._updateInterval);
+        },
+
+        addDate: function (date) {
+            /// <summary>Adds a particular date element containing the date's Salah times to the datesList.</summary>
+            /// <param name="date" type="Date">The date for which to add salah times.</param>
+            /// <returns type="HTMLListElement">An element in the datesList</returns>
+            if (!this._lastDateAdded) {
+                this._lastDateAdded = date;
+            } else {
+                if (date > this._lastDateAdded)
+                    this._lastDateAdded = date;
+            }
+
             var times = this._prayerCalculator.calculateTimes(date);
             var time; // iterator
 
@@ -105,6 +157,7 @@
                     continue;
 
                 var salahEl = document.createElement("li");
+                salahEl.className = time;
                 salahEl.time = times[time];
 
                 // set expiry
@@ -141,298 +194,237 @@
                 salahTime.style.width = getComputedStyle(salahTime).width;
             }
 
-            if (animate) {
-                prayerDate.style.opacity = 0;
-                return WinJS.UI.Animation.enterContent(prayerDate);
-            } else {
-                return WinJS.Promise.as(null);
-            }
+            return prayerDate;
         },
 
-        removeExpiredAsync: function (animate) {
-            console.log("Removing expired prayers.");
-
-            var that = this;
-
-            // behavior: if coming back to the app (alt-tabbing/minimize maximize) after a long period
-            // enumerate expired times: if 1 then swipe remove, more than 1 fast delete all
-
-            var expiredSalahs = [];
-            var expiredDates = [];
-
-            // iterate over dates
+        getExpired: function() {
+            /// <summary>Iterates through the dates and returns the expired salah</summary>
+            /// <returns type="Object">An object containing an array of expired prayers and fully expired (empty) dates</returns>
+            var expiredSalahs = [], emptyDates = [];
             var dates = this._datesList.getElementsByClassName("date");
-            var d = 0;
-            while (d < dates.length) {
-                var freshSalah = false;
 
-                var date = dates.item(d);
-                var salahs = date.getElementsByClassName("salahList")[0].getElementsByTagName("li");
+            var freshSalah = false, dateIterator = 0, now = new Date(), date;
+            while (!freshSalah && (date = dates.item(dateIterator))) {
+                var salahs = date.querySelector(".salahList").getElementsByTagName("li");
 
                 for (var i = 0; i < salahs.length; i++) {
                     var salah = salahs.item(i);
-                    if (salah.expiry < new Date()) {
+                    if (salah.expiry < now) {
                         expiredSalahs.push(salah);
                     } else {
-                        //console.log(salah.firstElementChild.innerText + " is current/next prayer");
+                        // Reached current salah
                         freshSalah = true;
                         break;
                     }
                 }
 
-                // check if all salahs on this date have expired (i.e. we have not found a fresh salah)
-                if (freshSalah == false) {
-                    //console.log(date.firstElementChild.innerText + " is empty.");
-                    expiredDates.push(date);
-                }
+                if (!freshSalah)
+                    emptyDates.push(date);
 
-                // check if we've found all the expired prayers:
-                // since dates are sorted chronologically, it is only necessary to keep checking
-                // prayers until we encounter a date which has not expired
-                if (freshSalah)
-                    break;
-                else
-                    d++;
+                dateIterator++;
             }
 
-            // Only use animation when 1 prayer has expired
-            if (animate && expiredSalahs.length == 1) {
-                return new WinJS.Promise(function (complete, error, progress) {
-                    var animPromises = [];
+            return { salahs: expiredSalahs, dates: emptyDates };
+        },
 
-                    for (var e = 0; e < expiredDates.length; e++) {
-                        var expDate = expiredDates[e];
-                        var dateStamp = expiredDates[e].firstElementChild;
-                        var fadeOut = WinJS.UI.Animation.fadeOut(dateStamp);
-                        animPromises.push(fadeOut);
-                        fadeOut.done(function () {
-                            var salahList = expDate.getElementsByClassName("salahList")[0];
-                            salahList.style.marginTop = dateStamp.offsetHeight + "px";
-                            expDate.removeChild(dateStamp);
-                        })
-                    }
+        fill: function () {
+            var THRESHOLD = 50;
+            var now = moment(), lastDay = moment(this._lastDateAdded);
 
-                    for (var s = 0; s < expiredSalahs.length; s++) {
-                        animPromises.push(wipeAsync(expiredSalahs[s]));
-                    }
+            var sizeDirection = (this._viewstate == "horizontal") ? "Width" : "Height";
+            var positionDirection = (this._viewstate == "horizontal") ? "Left" : "Top";
 
-                    WinJS.Promise.join(animPromises).done(function () {
-                        for (var e = 0; e < expiredDates.length; e++) {
-                            that._datesList.removeChild(expiredDates[e]);
-                        }
-
-                        complete();
-                    });
-                });
-            } else {
-                for (var s = 0; s < expiredSalahs.length; s++) {
-                    var expiredSalah = expiredSalahs[s];
-                    expiredSalah.parentNode.removeChild(expiredSalah);
-                }
-
-                for (var e = 0; e < expiredDates.length; e++) {
-                    this._datesList.removeChild(expiredDates[e]);
-                }
-
-                return WinJS.Promise.as(null);
+            while ((lastDay.diff(now, "days") < this._options.futureDayDisplayCount) && 
+                (this._datesList["scroll" + sizeDirection] - this._datesList["offset" + sizeDirection]) - this._datesList["scroll" + positionDirection] < THRESHOLD) {
+                lastDay.add('d', 1);
+                this.addDate(lastDay.toDate());
             }
         },
 
-        fillDatesListAsync: function () {
-            // TODO: In a snapped view state we can't measure horizontally
-            if (Windows.UI.ViewManagement.ApplicationView.value == Windows.UI.ViewManagement.ApplicationViewState.snapped)
-                return WinJS.Promise.wrap(null);
+        getCurrentSalah: function () {
+            var now = new Date();
 
-            console.log("Filling the datesList.");
-            return new WinJS.Promise(function (complete, error, progress) {
-                fillExtraSpace = fillExtraSpace.bind(this);
-                if (this._datesList.getElementsByTagName("li").length == 0) {
-                    this.addSalahTimesAsync(new Date(), true);
-                    this.removeExpiredAsync(false).then(fillExtraSpace);
-                } else {
-                    fillExtraSpace();
+            // Check if yesterday's isha is still in effect
+            var yesterdaySalahEl = document.getElementById(this.toDateId(moment().subtract('d', 1).toDate()));
+
+            if (yesterdaySalahEl) {
+                var ishaEl = yesterdaySalahEl.querySelector(".isha");
+                if (ishaEl && ishaEl.expiry > now)
+                    return ishaEl;
+            }
+
+            // Not yesterday's isha, iterate over today's salah
+
+            var todaysSalahEl = document.getElementById(this.toDateId(new Date()));
+            if (todaysSalahEl) {
+                var salah = todaysSalahEl.querySelector(".salahList").getElementsByTagName("li");
+                for (var s = 0; s < salah.length; s++) {
+                    var salahEl = salah.item(s);
+                    if (now > salahEl.time && now < salahEl.expiry)
+                        return salahEl;
                 }
+            }
 
-                function fillExtraSpace() {
-                    if (this._datesList.scrollWidth == 0 || this._datesList.offsetWidth == 0)
-                        complete();
-
-                    while (this._datesList.scrollWidth <= this._datesList.offsetWidth) {
-                        this.lastDateAdded.add('d', 1); // increment the lastDateAdded
-                        this.addSalahTimesAsync(this.lastDateAdded.toDate(), true);
-                    }
-                    complete();
-                }
-            }.bind(this));
+            return null;
         },
 
         /* Updates the datesList. Returns a Promise that is completed when the datesList has finished updating */
-        updateDatesListAsync: function () {
-            var that = this;
+        updateAsync: function () {            
+            var promises = [], that = this;
 
-            console.log("Updating datesList:");
-            if (!this._lastUpdateTime)
-                this._lastUpdateTime = new Date();
+            var expired = this.getExpired();
+            // Remove the expired salah or the expired date
+            if (this._options.removeExpiredSalah) {
+                // Remove expired salah elements, use an animation if only 1 has expired
+                if (expired.salahs.length == 1) {
+                    var wipePromise = null, dateFadePromise = null;
+                    wipePromise = wipeAsync(expired.salahs[0]);
+                    promises.push(wipePromise);
 
-            var animate = !(Windows.UI.ViewManagement.ApplicationView.value == Windows.UI.ViewManagement.ApplicationViewState.snapped);
+                    // Check if we have an expired date, then the expired salah was isha, so we need to do some 
+                    // additional animating to make everything look great
+                    if (expired.dates.length != 0) {
+                        // Remove the expired date with an animation
+                        var expiredDate = expired.dates[0];
+                        var expiredDateStamp = expiredDate.querySelector(".datesStamp")
+                        dateFadePromise = WinJS.UI.Animation.fadeOut(expiredDateStamp).then(function () {
+                            expiredDate.querySelector(".salahList").style.marginTop = expiredDateStamp.offsetHeight + "px";
+                            expiredDate.removeChild(expiredDateStamp);
+                        });
+                        promises.push(dateFadePromise);
 
-            return this.removeExpiredAsync(animate).then(function () {
-                updateDateStamps();
-
-                var current = getCurrentPrayer();
-                if (current) {
-                    return updateCurrentAsync();
-                }
-            }).then(
-                // fill the datesList so it overflows the screen (also ensuring it always contains 
-                // the upcoming salah times)
-                that.fillDatesListAsync.bind(that)
-            ).then(function () {
-                setImmediate(setSnapPoints());
-                that._lastUpdateTime = new Date();
-                console.log("Finished updating the datesList.");
-            });
-
-            /* If a prayer is current this updates it:
-                    - Adds and updates the progress bar 
-                    - Updates the time text (animating it)
-               Return a promise that completes when the current list element reaches its final width value
-            */
-            function updateCurrentAsync() {
-                console.log("Updating current salah.");
-                var current = getCurrentPrayer();
-                current.className = "current";
-                var timeDiff = moment(current.expiry).fromNow(true);
-                var animPromise = updateSalahTimeAsync(timeDiff.charAt(0).toUpperCase() + timeDiff.substring(1) + " remaining");
-
-                // update progress bar
-                getProgressBar().value = Date.now() - current.time.getTime();
-                return animPromise;
-            }
-
-            /* Returns the HTMLElement that is the current prayer, assumes no expired prayers in datesList */
-            function getCurrentPrayer() {
-                var now = new Date();
-
-                // check if a prayer is current
-                // note there is not necessarily always a current prayer (think about time after sunrise and before dhuhr)
-                var todaysSalah = that._datesList.firstElementChild;
-                if (!todaysSalah || !todaysSalah.getElementsByClassName("salahList")[0].firstElementChild)
-                    return null;
-
-                var candidate = todaysSalah.getElementsByClassName("salahList")[0].firstElementChild;
-                if (candidate.time < now) {
-                    return candidate;
-                }
-
-                return null;
-            }
-
-            function updateSalahTimeAsync(text) {
-                var current = getCurrentPrayer();
-                var salahTime = current.getElementsByTagName("h2")[0];
-
-                // use a hidden element to measure what the actual length of the text would be
-                var hidden = document.createElement(salahTime.tagName);
-                current.appendChild(hidden);
-                hidden.innerText = text;
-                hidden.style.display = "inline-block";
-                var hiddenWidth = getComputedStyle(hidden).width;
-                current.removeChild(hidden);
-
-                salahTime.style.width = hiddenWidth;
-                salahTime.innerText = text;
-
-                return new WinJS.Promise(function (complete, error, progress) {
-                    var animDuration = parseFloat(salahTime.currentStyle.msTransitionDuration) * 1000
-                    setTimeout(complete, animDuration);
-                });
-            }
-
-            function getProgressBar() {
-                var current = getCurrentPrayer();
-                if (current) {
-                    var progress = current.getElementsByTagName("progress")[0];
-                    if (!progress) {
-                        // no progress bar, create it
-                        var container = document.createElement("div");
-                        container.className = "progressContainer";
-                        current.appendChild(container);
-                        progress = document.createElement("progress");
-                        container.appendChild(progress);
-                        // set the max property to the difference in milliseconds between the expiry time and start time
-                        progress.max = current.expiry.getTime() - current.time.getTime();
-                        WinJS.UI.Animation.fadeIn(progress);
+                        WinJS.Promise.join({ wipe: wipePromise, date: dateFadePromise }).then(function () {
+                            that._datesList.removeChild(expiredDate);
+                        });
+                    }
+                } else {
+                    // Otherwise remove salah & dates from the page immediately
+                    for (var s = 0; s < expired.salahs.length; s++) {
+                        var expiredSalah = expired.salahs[s];
+                        expiredSalah.parentNode.removeChild(expiredSalah);
                     }
 
-                    return progress;
+                    // Remove fully expired dates
+                    for (var d = 0; d < expired.dates.length; d++) {
+                        this._datesList.removeChild(expired.dates[d]);
+                    }
+                }
+            } else {
+                // Style the expired salahs
+                for (var e = 0; e < expired.salahs.length; e++) {
+                    var expiredSalah = expired.salahs[e];
+                    WinJS.Utilities.addClass(expiredSalah, "expired"); // util method doesn't add duplicates
                 }
 
-                return null;
+                if (expired.salahs.length != 0) {
+                    var lastExpiredSalah = expired.salahs[expired.salahs.length - 1];
+                    if (WinJS.Utilities.hasClass(lastExpiredSalah, "current")) {
+                        WinJS.Utilities.removeClass(lastExpiredSalah, "current");
+
+                        // Remove the progress container
+                        lastExpiredSalah.removeChild(lastExpiredSalah.querySelector(".progressContainer"));
+
+                        this.changeSalahTimeTextAsync(lastExpiredSalah, moment(lastExpiredSalah.time).format("h\u2236mm a"));
+                    }
+                }
+
+                if (expired.dates.length != 0) {
+                    // Remove fully expired dates with an animation
+                    var remainingDates = [];
+                    var lastDeletedDate = moment(expired.dates[expired.dates.length - 1].date);
+                    var nextDate = null;
+                    while (nextDate = document.getElementById(this.toDateId(lastDeletedDate.add('d', 1).toDate()))) {
+                        remainingDates.push(nextDate);
+                    }
+                    var deleteAnimation = WinJS.UI.Animation.createDeleteFromListAnimation(expired.dates, remainingDates);
+                    for (var d = 0; d < expired.dates.length; d++) {
+                        this._datesList.removeChild(expired.dates[d]);
+                    }
+
+                    promises.push(deleteAnimation.execute());
+                }
             }
 
-            function updateDateStamps() {
-                console.log("Updating date titles.");
-                var now = new Date();
+            // Update the current prayers time remaining
+            var currentSalah = this.getCurrentSalah();
+            if (currentSalah) {
+                // If the current salah has just become current, add the necessary elements to it
+                if (!WinJS.Utilities.hasClass(currentSalah, "current")) {
+                    WinJS.Utilities.addClass(currentSalah, "current");
 
-                // check if we've transitioned to a new day
-                if (that._lastUpdateTime.toDateString() != now.toDateString()) {
-                    var yesterday = moment().subtract('d', 1).toDate();
-                    var tomorrow = moment().add('d', 1).toDate();
-
-                    var yesterdayEl = that._datesList.querySelector("#" + that.toDateId(yesterday));
-                    var todayEl = that._datesList.querySelector("#" + that.toDateId(now));
-                    var tomorrowEl = that._datesList.querySelector("#" + that.toDateId(tomorrow));
-
-                    if (yesterdayEl)
-                        replaceDateStamp(yesterdayEl, "Yesterday");
-
-                    if (todayEl)
-                        replaceDateStamp(todayEl, "Today");
-
-                    if (tomorrowEl)
-                        replaceDateStamp(tomorrowEl, "Tomorrow");
+                    // Add a progress element to the current salah
+                    var container = document.createElement("div");
+                    container.className = "progressContainer";
+                    currentSalah.appendChild(container);
+                    var progress = document.createElement("progress");
+                    container.appendChild(progress);
+                    progress.max = currentSalah.expiry.getTime() - currentSalah.time.getTime();
+                    WinJS.UI.Animation.fadeIn(progress);
                 }
 
-                function replaceDateStamp(salah, text) {
-                    /// <param name="salah" type="HTMLElement">The salah element for which to change the dateStamp</param>
-                    var newStamp = document.createElement("label");
-                    newStamp.className = "dateStamp";
-                    newStamp.innerText = text;
+                // Get an english read-able amount of time remaining
+                var diff = moment(currentSalah.expiry).fromNow(true);
+                var timeRemainingString = diff.charAt(0).toUpperCase() + diff.substring(1) + " remaining";
 
-                    var oldStamp = salah.firstElementChild;
-                    newStamp.style.position = "absolute";
-                    salah.insertBefore(newStamp, oldStamp);
-                    WinJS.UI.Animation.crossFade(newStamp, oldStamp).then(function () {
-                        newStamp.style.position = "";
-                        salah.removeChild(oldStamp);
-                    });
-                }
+                // Update the time string
+                promises.push(this.changeSalahTimeTextAsync(currentSalah, timeRemainingString));
+
+                // Update the progress element
+                currentSalah.querySelector("progress").value = Date.now() - currentSalah.time.getTime();
+            }
+
+            // Check today elements title
+            var todayEl = document.getElementById(this.toDateId(new Date()));
+            if (todayEl && todayEl.querySelector(".dateStamp").innerText != "Today") {
+                // Date stamps are stale, update them
+                var yesterday = moment().subtract('d', 1).toDate();
+                var tomorrow = moment().add('d', 1).toDate();
+                
+                var yesterdayEl = document.getElementById(this.toDateId(yesterday)),
+                    tomorrowEl = document.getElementById(this.toDateId(tomorrow));
+
+                if (yesterdayEl)
+                    replaceDateStamp(yesterdayEl, "Yesterday");
+                if (todayEl)
+                    replaceDateStamp(todayEl, "Today");
+                if (tomorrowEl)
+                    replaceDateStamp(tomorrowEl, "Tomorrow");
+            }
+
+            return WinJS.Promise.join(promises);
+
+            function replaceDateStamp(salah, text) {
+                /// <param name="salah" type="HTMLElement">The salah element for which to change the dateStamp</param>
+                var newStamp = document.createElement("label");
+                newStamp.className = "dateStamp";
+                newStamp.innerText = text;
+
+                var oldStamp = salah.firstElementChild;
+                newStamp.style.position = "absolute";
+                salah.insertBefore(newStamp, oldStamp);
+                WinJS.UI.Animation.crossFade(newStamp, oldStamp).then(function () {
+                    newStamp.style.position = "";
+                    salah.removeChild(oldStamp);
+                });
             }
         },
 
-        /* Adds additional prayers when user scrolls to end of datesList */
-        datesListScrollHandler: function(scrollEvent) {
-            // TODO implement custom scrolling (buttons, i'm thinking) for when user
-            // is using mouse input (not touch). This is because in the case when the user drags the scroll bar 
-            // to scroll, the list jerks (due to conflicting scrollLeft and mouse position) after adding some
-            // more prayer times
+        changeSalahTimeTextAsync: function (salahEl, text) {
+            var salahTime = salahEl.querySelector("h2");
 
-            if (Windows.UI.ViewManagement.ApplicationView.value == Windows.UI.ViewManagement.ApplicationViewState.snapped)
-                return;
+            // use a hidden element to measure what the actual length of the text would be
+            var hidden = document.createElement(salahTime.tagName);
+            salahEl.appendChild(hidden);
+            hidden.innerText = text;
+            hidden.style.display = "inline-block";
+            var hiddenWidth = getComputedStyle(hidden).width;
+            salahEl.removeChild(hidden);
 
-            // check if user has scrolled within THRESHOLD pixels of end
-            var endDistance = (this._datesList.scrollWidth - this._datesList.offsetWidth) - this._datesList.scrollLeft;
-            var THRESHOLD = 30;
+            salahTime.style.width = hiddenWidth;
+            salahTime.innerText = text;
 
-            if (endDistance < THRESHOLD) {
-                // add an additional date to the list
-                setImmediate(function () {
-                    var lastDate = this._datesList.lastElementChild.date;
-                    this.addSalahTimesAsync(moment(lastDate).add('d', 1).toDate(), false);
-                    setSnapPoints(); // reset snap points
-                }.bind(this));
-            }
+            var duration = parseFloat(salahTime.currentStyle.msTransitionDuration) * 1000;
+            return WinJS.Promise.timeout(duration);
         },
 
         toDateId: function (date) {
@@ -480,18 +472,5 @@
                 complete();
             }, 1400 + DELAY);
         });
-    }
-
-    /* Sets the css snap points property for snap scrolling */
-    function setSnapPoints() {
-        console.log("Setting snapPoints.");
-        var datesList = document.getElementById("datesList");
-        var paddingLeft = parseFloat(datesList.currentStyle.paddingLeft);
-        var els = datesList.getElementsByClassName("date");
-        var snapPoints = [];
-        for (var i = 0; i < els.length; i++) {
-            snapPoints.push((els.item(i).offsetLeft - paddingLeft) + "px");
-        }
-        datesList.style.msScrollSnapPointsX = "snapList(" + snapPoints.toString() + ")";
     }
 })();

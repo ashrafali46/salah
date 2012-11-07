@@ -3,9 +3,9 @@
 // LocationControl by Mahir Iqbal
 
 var LocationControl = (function() {
-    var mapBackgroundImageURL = "/images/worldmap/map-altered2.png";
+    var mapBackgroundImageURL = "/images/worldmap/map.png";
     var MAP_DIMENSION = 1000; // map dimension in pixels (at 100% scale)
-    var userAgent = "SalahApp/1.0 (Windows 8; email:bayvakoof@live.com)";
+    var userAgent = "SalahApp/1.0.0.2 (Windows 8; email:bayvakoof@live.com)";
     var XHR_TIMEOUT = 2500;
 
     // For the map translation animation

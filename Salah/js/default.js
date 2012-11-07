@@ -3,7 +3,7 @@
 (function () {
     "use strict";
 
-    var INTERVAL = 60000, INITIAL_DELAY = 2800, salahUpdateInterval;
+    var INTERVAL = 60000, INITIAL_DELAY = 2200, salahUpdateInterval;
     
     // Location is undefined iff app is being run for the first time, we always want to go directly to app
     // settings if it ever is
@@ -84,12 +84,12 @@
 
                     if (view == "salah") {
                         clearInterval(salahUpdateInterval);
-                        salahUpdateInterval = setInterval(function () {
+                        /*salahUpdateInterval = setInterval(function () {
                             salahHost.winControl.updateDatesListAsync()
-                        }, INTERVAL);
+                        }, INTERVAL);*/
 
                         setTimeout(function () {
-                            salahHost.winControl.updateDatesListAsync();
+                            salahHost.winControl.updateAsync();
                         }, INITIAL_DELAY);
                     }
                 });
@@ -132,13 +132,6 @@
             }
            
             clearInterval(salahUpdateInterval);
-            salahUpdateInterval = setInterval(function () {
-                salahControl.updateDatesListAsync()
-            }, INTERVAL);
-
-            setTimeout(function () {
-                salahControl.updateDatesListAsync();
-            }, INITIAL_DELAY);
 
             WinJS.UI.Animation.enterContent(animate);
             view = "salah";
