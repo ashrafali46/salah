@@ -4,12 +4,14 @@
     WinJS.UI.Pages.define("/pages/salah.html", {
         enterContentAnimationElements: null,
 
+        /// To show only todays salah: removeExpiredSalah - false, futureDayDisplayCount: 0
+        /// To show unlimited upcoming salah: removeExpiredSalah - true, futureDayDisplayCount: Number.POSITIVE_INFINITY
         _options: {
             // If true salah are removed as they expire, otherwise dates are removed only
             // when all salah on that date have expired
             removeExpiredSalah: false,
             // The number of days in the future that salah will displayed for
-            futureDayDisplayCount: Number.POSITIVE_INFINITY, 
+            futureDayDisplayCount: 0,
             salahUpdateInterval: 60000
         },
         
@@ -62,7 +64,7 @@
             this.fill();
         },
 
-        ready: function(element, options, loadResult) {
+        ready: function (element, options, loadResult) {
             // Register the update method
             var that = this;
             this._updateInterval = setInterval(function () {
@@ -83,6 +85,9 @@
                 }
             }
             window.addEventListener("resize", this._viewStateHandler);
+
+            // Update the salah a bit after displaying for effect.
+            setTimeout(this.updateAsync.bind(this), 2000);
         },
 
         unload: function () {

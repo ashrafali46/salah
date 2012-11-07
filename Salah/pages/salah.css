@@ -38,7 +38,6 @@
 }
 
 label.dateStamp {
-	color: rgba(255, 255, 255, 0.95);
 	display: block;
 	font-size: 11pt;
     font-weight: 600;
@@ -47,7 +46,9 @@ label.dateStamp {
 }
 
 .salahList > li {
-	background-color: rgba(0, 0, 0, 0.8);
+    background-clip: content-box;
+    border: 1px solid rgba(0, 0, 0, 0.95);
+	background-color: rgba(0, 0, 0, .95);
 	margin-right: 2px;
     transition: background-color .3s linear, color .3s linear;
 }
@@ -57,8 +58,7 @@ label.dateStamp {
 }
 
 .salahList > li.expired {
-    background-color: rgba(0, 0, 0, 0.45);
-    color: rgba(255, 255, 255, 0.55);
+    color: rgba(255, 255, 255, 0.3);
 }
 
 .salahList h1 {
@@ -87,6 +87,7 @@ label.dateStamp {
 }
 
 .progressContainer progress {
+    background-color: rgba(255, 255, 255, 0.07);
     display: block;
     vertical-align: text-bottom;
     width: 100%;
