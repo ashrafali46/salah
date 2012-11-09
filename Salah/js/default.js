@@ -25,7 +25,7 @@
                 var backgroundEl = document.getElementById("background");
                 backgroundEl.style.backgroundImage = "url('" + backgroundLoaderImage.src + "')";
                 backgroundLoaderImage = null;
-                setTimeout(loadCallback, 50); // A tiny delay to prevent the background from popping
+                setTimeout(loadCallback, 50); // A tiny delay to prevent the background from popping in
             });
 
             backgroundLoaderImage.src = "/images/backgrounds/" + ApplicationSettings.background;
@@ -41,14 +41,12 @@
                 break;
         }
 
+        contentHost.style.visibility = "hidden";
         teardownPromise = WinJS.Promise.join(delayPromises);
         teardownPromise.then(function () {
             // Animate the content (using an enterPage animation) after the splash screen has been torn down
+            contentHost.style.visibility = "visible";
             var animationElements = contentHost.winControl.enterContentAnimationElements;
-            for (var i = 0; i < animationElements.length; i++) {
-                animationElements[i].style.opacity = 0;
-            }
-
             WinJS.UI.Animation.enterPage(animationElements);
         });
     }, false);
@@ -74,7 +72,15 @@
         settingsPane.addEventListener("commandsrequested", function(event) {
             var appCommands = event.detail[0].request.applicationCommands;
 
-            var settingsCommand = new AppSettings.SettingsCommand("settings", "Settings", showSettings);
+            var settingsCommand = new AppSettings.SettingsCommand("settings", "Settings", function () {
+                WinJS.UI.Animation.exitPage(contentHost.winControl.enterContentAnimationElements).done(function () {
+                    contentHost.style.visibility = "hidden";
+                    loadSettings().then(function () {
+                        contentHost.style.visibility = "visible";
+                        WinJS.UI.Animation.enterPage(contentHost.winControl.enterContentAnimationElements);
+                    });
+                });
+            });
             appCommands.append(settingsCommand);
 
             var privacyCommand = new AppSettings.SettingsCommand("privacy", "Privacy Policy", function () {
@@ -102,6 +108,6 @@
         view = ApplicationViews.settings;
 
         WinJS.Utilities.empty(contentHost);
-        return WinJS.UI.Pages.render("/pages/settings.html", contentHost, { settingsFinishedCallback: loadSalah });
+        return WinJS.UI.Pages.render("/pages/settings.html", contentHost);
     }
 })();

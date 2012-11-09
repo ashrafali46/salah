@@ -11,12 +11,11 @@
             // when all salah on that date have expired
             removeExpiredSalah: false,
             // The number of days in the future that salah will displayed for
-            futureDayDisplayCount: 0,
-            salahUpdateInterval: 60000
+            futureDayDisplayCount: 0
         },
         
         _lastDateAdded: null,
-        _updateInterval: null,
+        _updater: null,
         _viewstate: "horizontal", // can either be "horizontal" or "vertical"
         _scrollHandler: null,
         _viewStateHandler: null,
@@ -65,12 +64,6 @@
         },
 
         ready: function (element, options, loadResult) {
-            // Register the update method
-            var that = this;
-            this._updateInterval = setInterval(function () {
-                that.updateAsync();
-            }, this._options.salahUpdateInterval);
-
             // Register the scroll handler
             this._scrollHandler = this.fill.bind(this);
             this._datesList.addEventListener("scroll", this._scrollHandler);
@@ -86,8 +79,45 @@
             }
             window.addEventListener("resize", this._viewStateHandler);
 
-            // Update the salah a bit after displaying for effect.
-            setTimeout(this.updateAsync.bind(this), 2000);
+            // Start updating after a small initial delay
+            setTimeout(this.startUpdating.bind(this), 2000);
+        },
+
+        startUpdating: function () {
+            // Register the update method
+            var that = this, SLOW_UPDATE_DELAY = 60000, FAST_UPDATE_DELAY = 5000;
+            _updateRecursive();
+
+            function _updateRecursive() {
+                that.updateAsync().then(function () {
+                    that.fill(); // fill up the screen according to the options
+                    // check if the list is empty, then add the next day
+                    if (that._datesList.getElementsByTagName("li").length == 0) {
+                        var nextDay = moment(that._lastDateAdded).add('d', 1);
+                        WinJS.UI.Animation.enterContent(that.addDate(nextDay));
+                    }
+
+                    // Schedule another update based on the time remaining in this salah
+                    var currentSalah = that.getCurrentSalah();
+                    var updateTime;
+
+                    if (currentSalah) {
+                        var remaining = moment().diff(moment(that.getCurrentSalah().expiry), "minutes");
+                        updateTime = (remaining <= 1) ? FAST_UPDATE_DELAY : SLOW_UPDATE_DELAY
+                    } else {
+                        updateTime = SLOW_UPDATE_DELAY;
+                    }
+
+                    that._updater = setTimeout(_updateRecursive, updateTime);
+                });
+            }
+        },
+
+        stopUpdating: function () {
+            if (this._updater) {
+                clearTimeout(this._updater);
+                this._updater = null;
+            }
         },
 
         unload: function () {
@@ -329,7 +359,7 @@
                         // Remove the progress container
                         lastExpiredSalah.removeChild(lastExpiredSalah.querySelector(".progressContainer"));
 
-                        this.changeSalahTimeTextAsync(lastExpiredSalah, moment(lastExpiredSalah.time).format("h\u2236mm a"));
+                        promises.push(this.changeSalahTimeTextAsync(lastExpiredSalah, moment(lastExpiredSalah.time).format("h\u2236mm a")));
                     }
                 }
 

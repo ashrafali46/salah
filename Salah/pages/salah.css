@@ -47,8 +47,8 @@ label.dateStamp {
 
 .salahList > li {
     background-clip: content-box;
-    border: 1px solid rgba(0, 0, 0, 0.95);
-	background-color: rgba(0, 0, 0, .95);
+    border: 1px solid rgba(0, 0, 0, 0.9);
+	background-color: rgba(0, 0, 0, .9);
 	margin-right: 2px;
     transition: background-color .3s linear, color .3s linear;
 }
@@ -68,14 +68,11 @@ label.dateStamp {
 .salahList h2 {
     padding: 0 30px 25px 30px;
     white-space: nowrap; /* prevent wrapping and just let them overflow */
-}
-
-.current h2 {
+    transition: width 0.4s ease;    
     display: block;
     overflow: hidden;
     padding-right: 0;
     margin-right: 30px;
-    transition: width 0.4s ease;
     white-space: nowrap;
 }
 

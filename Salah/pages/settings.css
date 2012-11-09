@@ -13,15 +13,7 @@
     z-index: 10;
 }
 
-#backButton {
-	margin-right: 20px;
-	margin-left: -60px;
-}
-
 .settingsPage .header {
-	-ms-flex-align: center;
-	
-	display: -ms-flexbox;
     margin-top: 45px;
     margin-left: 120px;
 }

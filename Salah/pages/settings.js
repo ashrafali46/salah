@@ -7,50 +7,23 @@
     "use strict";
 
     WinJS.UI.Pages.define("/pages/settings.html", {
+        enterContentAnimationElements: null,
+
         render: function (element, options, loadResult) {
             /// <summary>Sets up the ui of the settings page</summary>
-            var finishedRenderingPromise;
+            element.appendChild(loadResult);
+            this.enterContentAnimationElements = [element.querySelector(".header"), element.querySelector("#settingsContainer")];
+
+            // Set container heights
+            this._setContainerHeights();
+
+            var locationOptions = {
+                location: ApplicationSettings.location,
+                locationName: ApplicationSettings.locationName,
+                autoMethod: ApplicationSettings.autoMethod
+            };
 
             var that = this;
-
-            element.appendChild(loadResult);
-
-            this._settingsFinishedCallback = function () {
-                that._unload();
-
-                if (options && options.settingsFinishedCallback)
-                    options.settingsFinishedCallback();
-            };
-            this._applicationFirstRun = (ApplicationSettings.location === undefined);
-
-            var locationOptions; // Options for the location control
-            if (this._applicationFirstRun) {
-                // If application is being run for the first time, disable the back button
-                this._backButton = element.querySelector("#backButton");
-                this._backButton.disabled = true;
-
-                // Set a bit more informative titles on settings elements
-                element.querySelector("#locationSetting .title").innerText = "Set your Location";
-                element.querySelector("#backgroundSetting .title").innerText = "Choose a Background";
-
-                locationOptions = {};
-            } else {
-                locationOptions = {
-                    location: ApplicationSettings.location,
-                    locationName: ApplicationSettings.locationName,
-                    autoMethod: ApplicationSettings.autoMethod
-                };
-            }
-
-            // Hide the continue element
-            element.querySelector("#continue").style.visibility = "hidden";
-
-            // Set container heights and a resize listener
-            this._setContainerHeights();
-            // Make sure you remove this event listener on Page unload
-            this._resizeListener = this._setContainerHeights.bind(this);
-            window.addEventListener("resize", this._resizeListener);
-
             // Create the location control
             this.locationControl = new LocationControl(element.querySelector("#locationControlHost"), locationOptions);
             // The LocationControl takes some time to load the map image
@@ -63,8 +36,7 @@
             // Create the backgroundListView
             this.bgListView = this._createBackgroundListView();
 
-            finishedRenderingPromise = locationControlReadyPromise;
-            return finishedRenderingPromise;
+            return locationControlReadyPromise;
         },
         
         _createBackgroundListView: function () {
@@ -185,15 +157,6 @@
                 }
             });
 
-            // Attach settingsFinishedCallback to the back button
-            backButton.addEventListener("click", function () {
-                // hack that prevents this from firing when i press enter on the locationInput in the LocationControl
-                if (window.inputRecentlyEntered)
-                    return;
-
-                that._settingsFinishedCallback();
-            });
-
             // Handle background item selection
             this.bgListView.addEventListener("iteminvoked", function (event) {
                 //var itemIndex = event.detail.itemIndex;
@@ -226,11 +189,7 @@
                     locationChosenCallback = null;
                 }
             });
-        },
-
-        _unload: function () {
-            window.removeEventListener("resize", this._resizeListener);
-        }        
+        }   
     });
 
 })();
