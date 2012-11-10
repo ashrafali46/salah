@@ -1,4 +1,6 @@
-﻿var ApplicationSettings = (function () {
+﻿// No dependencies
+
+var ApplicationSettings = (function () {
     var LocalSettingsValues = Windows.Storage.ApplicationData.current.localSettings.values;
 
     var locationCoordSettingId = "locationCoordinate",

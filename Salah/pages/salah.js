@@ -66,6 +66,8 @@
         },
 
         ready: function (element, options, loadResult) {
+            var that = this;
+
             // Register the scroll handler
             this._scrollHandler = this.fill.bind(this);
             this._datesList.addEventListener("scroll", this._scrollHandler);
@@ -82,7 +84,15 @@
             window.addEventListener("resize", this._viewStateHandler);
 
             // Start updating after a small initial delay
-            setTimeout(this.startUpdating.bind(this), 2000);
+            setTimeout(function () {
+                that.startUpdating();
+                
+                // Schedule tile updates 2 days in advance
+                var tus = new TileUpdateScheduler();
+                if (tus.daysScheduled < 2) {
+                    setImmediate(tus.schedule(that._prayerCalculator, 1));
+                }
+            }, 2000);
         },
 
         startUpdating: function () {

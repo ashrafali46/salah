@@ -1,4 +1,6 @@
-﻿var PrayerCalculator = (function () {
+﻿// No dependencies
+
+var PrayerCalculator = (function () {
     function PrayerCalculator(location, parameters) {
         this.location = location;
         this.parameters = parameters;
