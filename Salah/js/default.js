@@ -53,6 +53,7 @@
 
     var app = WinJS.Application;
     app.addEventListener("activated", activatedHandler);
+    document.addEventListener("visibilitychange", visibilityHandler);
     setupSettingsCharm();
     app.start();
     
@@ -109,5 +110,12 @@
 
         WinJS.Utilities.empty(contentHost);
         return WinJS.UI.Pages.render("/pages/settings.html", contentHost);
+    }
+
+    function visibilityHandler() {
+        console.log("Visibility changed.");
+        if (view == ApplicationViews.salah) {
+            (document.hidden) ? contentHost.winControl.stopUpdating() : contentHost.winControl.startUpdating();
+        }
     }
 })();

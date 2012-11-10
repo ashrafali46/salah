@@ -72,6 +72,7 @@ TileUpdateScheduler = (function () {
 
         try {
             var scheduledNotification = new Notifications.ScheduledTileNotification(wideUpdateXml, deliveryTime);
+            scheduledNotification.expirationTime = expirationTime;
             this.updater.addToSchedule(scheduledNotification);
         } catch (error) {
             // catch any errors in case the deliveryTime is borked.

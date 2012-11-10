@@ -92,7 +92,7 @@
                 if (tus.daysScheduled < 2) {
                     setImmediate(tus.schedule(that._prayerCalculator, 1));
                 }
-            }, 2000);
+            }, 1000);
         },
 
         startUpdating: function () {
@@ -103,11 +103,6 @@
             function _updateRecursive() {
                 that.updateAsync().then(function () {
                     that.fill(); // fill up the screen according to the options
-                    // check if the list is empty, then add the next day
-                    if (that._datesList.getElementsByTagName("li").length == 0) {
-                        var nextDay = moment(that._lastDateAdded).add('d', 1);
-                        WinJS.UI.Animation.enterContent(that.addDate(nextDay));
-                    }
 
                     // Schedule another update based on the time remaining in this salah
                     var currentSalah = that.getCurrentSalah();
@@ -120,6 +115,7 @@
                         updateTime = SLOW_UPDATE_DELAY;
                     }
 
+                    console.log(updateTime);
                     that._updater = setTimeout(_updateRecursive, updateTime);
                 });
             }
@@ -285,6 +281,12 @@
                 (this._datesList["scroll" + sizeDirection] - this._datesList["offset" + sizeDirection]) - this._datesList["scroll" + positionDirection] < THRESHOLD) {
                 lastDay.add('d', 1);
                 this.addDate(lastDay.toDate());
+            }
+
+            // check if the list is empty, then add the next day
+            if (this._datesList.getElementsByTagName("li").length == 0) {
+                lastDay.add('d', 1);
+                WinJS.UI.Animation.enterContent(this.addDate(lastDay.toDate()));
             }
         },
 
