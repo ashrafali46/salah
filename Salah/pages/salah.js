@@ -1,4 +1,6 @@
-﻿(function () {
+﻿/// <reference path="/js/ApplicationSettings.js" />
+
+(function () {
     "use strict";
 
     WinJS.UI.Pages.define("/pages/salah.html", {
@@ -30,14 +32,14 @@
 
             element.appendChild(loadResult);
 
-            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location, PrayerCalculator.Methods.ISNA);
+            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods.ISNA);
             this._datesList = element.querySelector("#datesList");
             
             // Set the enterPage animatable elements
             this.enterContentAnimationElements = [element.querySelector(".header"), this._datesList];
 
             // Set the locationName from settings
-            element.querySelector("#locationName").innerText = ApplicationSettings.locationName;
+            element.querySelector("#locationName").innerText = ApplicationSettings.location.name;
 
             // Begin adding prayers to the page
             this.addDate(moment().add('d', -1).toDate(), false); // Insert yesterday's times in case last night's isha is still in effect

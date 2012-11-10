@@ -100,6 +100,7 @@
     <Content Include="js\LocationControl.js" />
     <None Include="Salah_StoreKey.pfx" />
     <None Include="Package.StoreAssociation.xml" />
+    <Content Include="js\TileUpdateScheduler.js" />
     <Content Include="pages\background-data.js" />
     <Content Include="pages\settings.css" />
     <Content Include="pages\settings.html" />

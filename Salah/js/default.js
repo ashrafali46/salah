@@ -10,7 +10,7 @@
     // Location is undefined iff app is being run for the first time, we always want to go directly to app
     // settings if it ever is
     var view = null,
-        initialView = (ApplicationSettings.location === undefined) ? ApplicationViews.settings : ApplicationViews.salah;
+        initialView = (ApplicationSettings.location.coord === undefined) ? ApplicationViews.settings : ApplicationViews.salah;
 
     WinJS.Utilities.ready(function () {
         contentHost = document.getElementById("contentHost");

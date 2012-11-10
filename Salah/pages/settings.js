@@ -18,9 +18,9 @@
             this._setContainerHeights();
 
             var locationOptions = {
-                location: ApplicationSettings.location,
-                locationName: ApplicationSettings.locationName,
-                autoMethod: ApplicationSettings.autoMethod
+                location: ApplicationSettings.location.coord,
+                locationName: ApplicationSettings.location.name,
+                autoMethod: ApplicationSettings.location.automatic
             };
 
             var that = this;
@@ -181,8 +181,8 @@
             });
 
             this.locationControl.addEventListener("locationset", function (event) {
-                ApplicationSettings.location = event.detail.location;
-                ApplicationSettings.locationName = event.detail.locationName;
+                ApplicationSettings.location.coord = event.detail.location;
+                ApplicationSettings.location.name = event.detail.locationName;
 
                 if (locationChosenCallback) {
                     locationChosenCallback();
