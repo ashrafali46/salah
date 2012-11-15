@@ -112,10 +112,18 @@
         return WinJS.UI.Pages.render("/pages/settings.html", contentHost);
     }
 
+    var visibilityUpdateTimeout;
     function visibilityHandler() {
-        console.log("Visibility changed.");
         if (view == ApplicationViews.salah) {
-            (document.hidden) ? contentHost.winControl.stopUpdating() : contentHost.winControl.startUpdating();
+            if (document.hidden) {
+                clearTimeout(visibilityUpdateTimeout);
+                contentHost.winControl.stopUpdating()
+            } else {
+                // a short delay before resuming updating is required
+                visibilityUpdateTimeout = setTimeout(function () {
+                    contentHost.winControl.startUpdating();
+                }, 600)
+            }
         }
     }
 })();

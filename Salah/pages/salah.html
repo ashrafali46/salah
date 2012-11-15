@@ -10,7 +10,7 @@
         <script src="/js/PrayerCalculator.js"></script>
         <script src="/js/moment.js"></script>
         <script src="/js/ApplicationSettings.js"></script>
-        <script src="/js/TileUpdateScheduler.js"></script>
+        <script src="/js/UpdateScheduler.js"></script>
 
         <script src="salah.js"></script>
         <link href="salah.css" rel="stylesheet" />
@@ -35,7 +35,12 @@
 			</hgroup>
 			<div id="datesListContainer">
 				<ol id="datesList">
-
+                    <li class="blankDate">
+                        <label class="dateStamp">Filler date</label>
+                        <ol class="salahList">
+                            <li><h1>Blank</h1><h2>Blank</h2></li>
+                        </ol>
+                    </li>
 				</ol>
 			</div>
 		</div>

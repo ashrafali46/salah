@@ -28,6 +28,13 @@
 	display: -ms-flexbox;
 }
 
+#datesList > li.blankDate {
+    position: static;
+    visibility: hidden;
+    overflow: hidden;
+    width: 0px;
+}
+
 .salahList {
 	-ms-flex-direction: row;
 	

@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" StartPage="default.html">
-      <VisualElements DisplayName="Salah" Logo="images\logo.png" SmallLogo="images\smalllogo.png" Description="A quick and visually appealing way to view the current and upcoming Islamic Salah times for your location. Prayer times are calculated using conventions determined by the Islamic Society of North America (ISNA). As always, please use discretion when determining the appropriate time to pray!" ForegroundText="light" BackgroundColor="#005a0b">
+      <VisualElements DisplayName="Salah" Logo="images\logo.png" SmallLogo="images\smalllogo.png" Description="A quick and visually appealing way to view the current and upcoming Islamic Salah times for your location. Prayer times are calculated using conventions determined by the Islamic Society of North America (ISNA). As always, please use discretion when determining the appropriate time to pray!" ForegroundText="light" BackgroundColor="#005a0b" ToastCapable="true">
         <DefaultTile ShowName="allLogos" WideLogo="images\widelogo.png" />
         <SplashScreen Image="images\splashscreen.png" />
         <InitialRotationPreference>

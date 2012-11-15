@@ -21,6 +21,7 @@
         _viewstate: "horizontal", // can either be "horizontal" or "vertical"
         _scrollHandler: null,
         _viewStateHandler: null,
+        _updating: false,
 
         render: function (element, options, loadResult) {
             // Copy options
@@ -88,41 +89,48 @@
                 that.startUpdating();
                 
                 // Schedule tile updates 2 days in advance
-                var tus = new TileUpdateScheduler();
-                if (tus.daysScheduled < 2) {
-                    setImmediate(tus.schedule(that._prayerCalculator, 1));
+                var us = new UpdateScheduler();
+                if (us.daysScheduled < 2) {
+                    setImmediate(us.schedule(that._prayerCalculator, 2));
                 }
             }, 1000);
         },
 
         startUpdating: function () {
+            console.log("Started updating.");
+
             // Register the update method
             var that = this, SLOW_UPDATE_DELAY = 60000, FAST_UPDATE_DELAY = 5000;
+            this._updating = true;
             _updateRecursive();
 
             function _updateRecursive() {
                 that.updateAsync().then(function () {
-                    that.fill(); // fill up the screen according to the options
+                    var addedItems = that.fill(); // fill up the screen according to the options
+                    WinJS.UI.Animation.enterContent(addedItems);
 
                     // Schedule another update based on the time remaining in this salah
                     var currentSalah = that.getCurrentSalah();
                     var updateTime;
 
                     if (currentSalah) {
-                        var remaining = moment().diff(moment(that.getCurrentSalah().expiry), "minutes");
+                        var remaining = moment(that.getCurrentSalah().expiry).diff(moment(), "minutes");
                         updateTime = (remaining <= 1) ? FAST_UPDATE_DELAY : SLOW_UPDATE_DELAY
                     } else {
                         updateTime = SLOW_UPDATE_DELAY;
                     }
 
-                    console.log(updateTime);
-                    that._updater = setTimeout(_updateRecursive, updateTime);
+                    console.log("Updating in: " + updateTime);
+                    if (that._updating)
+                        that._updater = setTimeout(_updateRecursive, updateTime);
                 });
             }
         },
 
         stopUpdating: function () {
-            if (this._updater) {
+            if (this._updating) {
+                console.log("Stopped updating.");
+                this._updating = false;
                 clearTimeout(this._updater);
                 this._updater = null;
             }
@@ -272,21 +280,25 @@
 
         fill: function () {
             var THRESHOLD = 50;
-            var now = moment(), lastDay = moment(this._lastDateAdded);
+            var now = moment(), lastDay = moment(this._lastDateAdded), datesList = this._datesList, that = this;
 
             var sizeDirection = (this._viewstate == "horizontal") ? "Width" : "Height";
             var positionDirection = (this._viewstate == "horizontal") ? "Left" : "Top";
 
-            while ((lastDay.diff(now, "days") < this._options.futureDayDisplayCount) && 
-                (this._datesList["scroll" + sizeDirection] - this._datesList["offset" + sizeDirection]) - this._datesList["scroll" + positionDirection] < THRESHOLD) {
+            var addedDates = [];
+
+            while (checkNeedToFill()) {
                 lastDay.add('d', 1);
-                this.addDate(lastDay.toDate());
+                addedDates.push(this.addDate(lastDay.toDate()));
             }
 
-            // check if the list is empty, then add the next day
-            if (this._datesList.getElementsByTagName("li").length == 0) {
-                lastDay.add('d', 1);
-                WinJS.UI.Animation.enterContent(this.addDate(lastDay.toDate()));
+            return addedDates;
+
+            function checkNeedToFill() {
+                var emptyList = (datesList.querySelector(".date") == null);
+                var needFutureDaysDisplayed = (lastDay.diff(now, "days") < that._options.futureDayDisplayCount);
+                var userScrolledToListEnd = (datesList["scroll" + sizeDirection] - datesList["offset" + sizeDirection] - datesList["scroll" + positionDirection] < THRESHOLD);
+                return emptyList || (userScrolledToListEnd && needFutureDaysDisplayed);
             }
         },
 
@@ -363,16 +375,12 @@
                 for (var e = 0; e < expired.salahs.length; e++) {
                     var expiredSalah = expired.salahs[e];
                     WinJS.Utilities.addClass(expiredSalah, "expired"); // util method doesn't add duplicates
-                }
 
-                if (expired.salahs.length != 0) {
-                    var lastExpiredSalah = expired.salahs[expired.salahs.length - 1];
-                    if (WinJS.Utilities.hasClass(lastExpiredSalah, "current")) {
+                    // If an expired salah was current salah refresh its contents to show it's not current
+                    if (WinJS.Utilities.hasClass(expiredSalah, "current")) {
                         WinJS.Utilities.removeClass(lastExpiredSalah, "current");
-
                         // Remove the progress container
                         lastExpiredSalah.removeChild(lastExpiredSalah.querySelector(".progressContainer"));
-
                         promises.push(this.changeSalahTimeTextAsync(lastExpiredSalah, moment(lastExpiredSalah.time).format("h\u2236mm a")));
                     }
                 }
@@ -385,12 +393,21 @@
                     while (nextDate = document.getElementById(this.toDateId(lastDeletedDate.add('d', 1).toDate()))) {
                         remainingDates.push(nextDate);
                     }
+
+                    // Set up delete from list animation
                     var deleteAnimation = WinJS.UI.Animation.createDeleteFromListAnimation(expired.dates, remainingDates);
+
                     for (var d = 0; d < expired.dates.length; d++) {
-                        this._datesList.removeChild(expired.dates[d]);
+                        deletedItem.style.display = "fixed";
+                        deletedItem.style.opacity = "0";
+                        var deletedItem = expired.dates[d];
                     }
 
-                    promises.push(deleteAnimation.execute());
+                    promises.push(deleteAnimation.execute().then(function() {
+                        for (var d = 0; d < expired.dates.length; d++) {
+                            that._datesList.removeChild(expired.dates[d]);
+                        }
+                    }));
                 }
             }
 
