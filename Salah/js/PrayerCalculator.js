@@ -6,15 +6,20 @@ var PrayerCalculator = (function () {
         this.parameters = parameters;
     }
     PrayerCalculator.Methods = {
-            ISNA: {
+        ISNA: {
             fajrAngle: -15,
             maghribAngle: -0.833,
             ishaAngle: -15
         },
-            Karachi: {
+        Karachi: {
             fajrAngle: -18,
             maghribAngle: -0.833,
             ishaAngle: -18
+        },
+        MuslimWorldLeague: {
+            fajrAngle: -18,
+            maghribAngle: -0.833,
+            ishaAngle: -17
         }
     };
     PrayerCalculator.prototype.calculateTimes = function (date) {

@@ -84,6 +84,11 @@
             });
             appCommands.append(settingsCommand);
 
+            var settingsFlyoutCommand = new AppSettings.SettingsCommand("settingsFlyout", "Settings Flyout", function() {
+                WinJS.UI.SettingsFlyout.showSettings("settingsFlyout", "/pages/settingsflyout.html");
+            });
+            appCommands.append(settingsFlyoutCommand);
+
             var privacyCommand = new AppSettings.SettingsCommand("privacy", "Privacy Policy", function () {
                 var uri = new Windows.Foundation.Uri("https://sites.google.com/site/salahprivacypolicy/");
                 Windows.System.Launcher.launchUriAsync(uri);

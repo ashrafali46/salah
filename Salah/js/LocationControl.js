@@ -41,6 +41,7 @@ var LocationControl = (function() {
         this._controlsVisible = true;
 
         this.element = controlHost;
+        this.element.style.visibility = "hidden";
 
         if (!controlHost.winControl)
             controlHost.winControl = this;
@@ -243,6 +244,7 @@ var LocationControl = (function() {
             
                 // Give a small timeout so the background image won't pop in
                 setTimeout(function () {
+                    that.element.style.visibility = "visible";
                     var readyEvent = document.createEvent("CustomEvent");
                     readyEvent.initCustomEvent("ready", true, false, {});
                     that.element.dispatchEvent(readyEvent);
@@ -541,6 +543,7 @@ var LocationControl = (function() {
         var degToRad = Math.PI / 180;
         // The neutralVerticalOffset is a result of the mapContainer being smaller than the mapImage height
         var neutralVerticalOffset = -0.5 * (MAP_DIMENSION - this._mapContainer.clientHeight);
+        var neutralHorizontalOffset = -0.5 * (MAP_DIMENSION - this._mapContainer.clientWidth);
         var x = radius * longitude * degToRad;
         var y;
 
@@ -576,7 +579,7 @@ var LocationControl = (function() {
             completePromise = WinJS.Promise.wrap(null);
         }
 
-        this._mapContainer.style.backgroundPositionX = (-1 * x) + "px"; // -1 * x because moving left requires a position background offset
+        this._mapContainer.style.backgroundPositionX = (-1 * x + neutralHorizontalOffset) + "px"; // -1 * x because moving left requires a position background offset
         this._mapContainer.style.backgroundPositionY = (y + neutralVerticalOffset) + "px";
 
         return completePromise;
