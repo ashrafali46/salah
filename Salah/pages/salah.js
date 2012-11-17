@@ -87,12 +87,6 @@
             // Start updating after a small initial delay
             setTimeout(function () {
                 that.startUpdating();
-                
-                // Schedule tile updates 2 days in advance
-                var us = new UpdateScheduler();
-                if (us.daysScheduled < 2) {
-                    setImmediate(us.schedule(that._prayerCalculator, 2));
-                }
             }, 1000);
         },
 
@@ -147,10 +141,10 @@
             /// <param name="date" type="Date">The date for which to add salah times.</param>
             /// <returns type="HTMLListElement">An element in the datesList</returns>
             if (!this._lastDateAdded) {
-                this._lastDateAdded = date;
+                this._lastDateAdded = new Date(date.getTime()); // Make copies as dates are passed by reference
             } else {
                 if (date > this._lastDateAdded)
-                    this._lastDateAdded = date;
+                    this._lastDateAdded = new Date(date.getTime());
             }
 
             var times = this._prayerCalculator.calculateTimes(date);
@@ -177,11 +171,11 @@
             var dateStamp = document.createElement("label");
             prayerDate.appendChild(dateStamp);
             dateStamp.className = "dateStamp";
-            var now = moment();
-            var dateMoment = moment(date);
+            var dateToday = moment().sod();
+            var dateMoment = moment(new Date(date.getTime())).sod();
 
             var dateString;
-            switch (dateMoment.diff(now, 'days')) {
+            switch (dateMoment.diff(dateToday, 'days')) {
                 case -1:
                     dateString = "Yesterday";
                     break;
@@ -280,7 +274,9 @@
 
         fill: function () {
             var THRESHOLD = 50;
-            var now = moment(), lastDay = moment(this._lastDateAdded), datesList = this._datesList, that = this;
+            var dateToday = moment().sod(),
+                lastDay = moment(new Date(this._lastDateAdded.getTime())).sod(),
+                datesList = this._datesList, that = this;
 
             var sizeDirection = (this._viewstate == "horizontal") ? "Width" : "Height";
             var positionDirection = (this._viewstate == "horizontal") ? "Left" : "Top";
@@ -296,7 +292,7 @@
 
             function checkNeedToFill() {
                 var emptyList = (datesList.querySelector(".date") == null);
-                var needFutureDaysDisplayed = (lastDay.diff(now, "days") < that._options.futureDayDisplayCount);
+                var needFutureDaysDisplayed = (lastDay.diff(dateToday, "days") < that._options.futureDayDisplayCount);
                 var userScrolledToListEnd = (datesList["scroll" + sizeDirection] - datesList["offset" + sizeDirection] - datesList["scroll" + positionDirection] < THRESHOLD);
                 return emptyList || (userScrolledToListEnd && needFutureDaysDisplayed);
             }
@@ -347,7 +343,7 @@
                     if (expired.dates.length != 0) {
                         // Remove the expired date with an animation
                         var expiredDate = expired.dates[0];
-                        var expiredDateStamp = expiredDate.querySelector(".datesStamp")
+                        var expiredDateStamp = expiredDate.querySelector(".dateStamp");
                         dateFadePromise = WinJS.UI.Animation.fadeOut(expiredDateStamp).then(function () {
                             expiredDate.querySelector(".salahList").style.marginTop = expiredDateStamp.offsetHeight + "px";
                             expiredDate.removeChild(expiredDateStamp);
@@ -378,10 +374,10 @@
 
                     // If an expired salah was current salah refresh its contents to show it's not current
                     if (WinJS.Utilities.hasClass(expiredSalah, "current")) {
-                        WinJS.Utilities.removeClass(lastExpiredSalah, "current");
+                        WinJS.Utilities.removeClass(expiredSalah, "current");
                         // Remove the progress container
-                        lastExpiredSalah.removeChild(lastExpiredSalah.querySelector(".progressContainer"));
-                        promises.push(this.changeSalahTimeTextAsync(lastExpiredSalah, moment(lastExpiredSalah.time).format("h\u2236mm a")));
+                        expiredSalah.removeChild(expiredSalah.querySelector(".progressContainer"));
+                        promises.push(this.changeSalahTimeTextAsync(expiredSalah, moment(expiredSalah.time).format("h\u2236mm a")));
                     }
                 }
 
@@ -398,14 +394,16 @@
                     var deleteAnimation = WinJS.UI.Animation.createDeleteFromListAnimation(expired.dates, remainingDates);
 
                     for (var d = 0; d < expired.dates.length; d++) {
-                        deletedItem.style.display = "fixed";
-                        deletedItem.style.opacity = "0";
                         var deletedItem = expired.dates[d];
+                        deletedItem.style.position = "fixed";
+                        deletedItem.style.opacity = "0";
                     }
 
                     promises.push(deleteAnimation.execute().then(function() {
                         for (var d = 0; d < expired.dates.length; d++) {
-                            that._datesList.removeChild(expired.dates[d]);
+                            var expiredDate = expired.dates[d];
+                            if (expiredDate.parentNode)
+                                that._datesList.removeChild(expiredDate);
                         }
                     }));
                 }

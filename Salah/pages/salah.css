@@ -54,10 +54,9 @@ label.dateStamp {
 
 .salahList > li {
     background-clip: content-box;
-    border: 1px solid rgba(0, 0, 0, 0.9);
 	background-color: rgba(0, 0, 0, .9);
 	margin-right: 2px;
-    transition: background-color .3s linear, color .3s linear;
+    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear; /* added wipe-able transition property here */
 }
 
 .salahList > li:last-child {
@@ -87,7 +86,8 @@ label.dateStamp {
     height: 0px;
     overflow: visible;
     position: relative;
-    top: -6px; /* progress height is 6px */
+    top: -7px; /* progress height is 6px */
+    padding: 0px 1px;
 }
 
 .progressContainer progress {
@@ -98,7 +98,7 @@ label.dateStamp {
 }
 
 .wipeable {    
-    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;
+    /*transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;*/
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
 }
