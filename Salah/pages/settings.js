@@ -20,7 +20,8 @@
             var locationOptions = {
                 location: ApplicationSettings.location.coord,
                 locationName: ApplicationSettings.location.name,
-                autoMethod: ApplicationSettings.location.automatic
+                autoMethod: ApplicationSettings.location.automatic,
+				lightControls: true
             };
 
             var that = this;

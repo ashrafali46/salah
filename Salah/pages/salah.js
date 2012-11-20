@@ -11,7 +11,7 @@
         _options: {
             // If true salah are removed as they expire, otherwise dates are removed only
             // when all salah on that date have expired
-            removeExpiredSalah: false,
+            removeExpiredSalah: true,
             // The number of days in the future that salah will displayed for
             futureDayDisplayCount: 0
         },
@@ -101,7 +101,11 @@
             function _updateRecursive() {
                 that.updateAsync().then(function () {
                     var addedItems = that.fill(); // fill up the screen according to the options
-                    WinJS.UI.Animation.enterContent(addedItems);
+                    if (addedItems.length != 0) {
+                        WinJS.UI.Animation.enterContent(addedItems).then(function () {
+                            that.updateAsync();
+                        });
+                    }
 
                     // Schedule another update based on the time remaining in this salah
                     var currentSalah = that.getCurrentSalah();

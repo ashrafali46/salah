@@ -29,15 +29,12 @@ var LocationControl = (function() {
         /// <field name='_markerText' type='HTMLHeadingElement'>The text annotation for the marker.</field>
         /// <field name='_dimmer' type='HTMLDivElement'>A dimmer div overlaying the mapImage used.</field>
         /// <field name='_controlsContainer' type='HTMLDivElement'>Contains UI elements to set the location of the control.</field>
-        /// <field name='_progress' type='HTMLProgressElement'>Indicates the control is working.</field>
         /// <field name='_visibilityButton' type='HTMLButtonElement'>A button which is used to toggle the visibility of the _controls div.</field>
         /// <field name='_methodToggle' type='WinJS.UI.ToggleSwitch'>A toggle switch specifying whether location is automatically obtained or set manually.</field>
         /// <field name='_locationInput' type='HTMLInputElement'>An input element which provides manual location entry.</field>
         /// <field name='_manualSubmit' type='HTMLInputElement'>A button which is used to submit the manual location user input.</field>
 
         /// <field name='_controlsVisible' type='boolean'>Whether the controls are visible or not.</field>
-        /// <field name='_request' type='WinJS.Promise'>If the method is automatic location and there is a async GetPosition() request being made, this
-        /// represents the promise.</field>
         this._controlsVisible = true;
 
         this.element = controlHost;
@@ -61,33 +58,25 @@ var LocationControl = (function() {
 
     LocationControl.prototype._initialize = function (options) {
         /// <summary>Performs initialization work for the control.</summary>
-        this._loadHTML(options);
+        this._loadHTML();
+
+		if (options)
+			this._initControls(options);
+
         this._attachEvents(options);
-
-        if (options && options.location) {
-            this.location = options.location;
-
-            if (options.locationName)
-                this.locationName = options.locationName;
-            else
-                this.locationName = this._latLonToString(this.location.latitude, this.location.longitude);
-        }
 
         // Start loading the map image
         this._mapImage.src = mapBackgroundImageURL;
     }
 
-    LocationControl.prototype._loadHTML = function (options) {
+    LocationControl.prototype._loadHTML = function () {
         /// <summary>Inserts LocationControl html content into the container element</summary>
-
         var mapContainer = document.createElement("div");
         this._mapContainer = mapContainer;
         mapContainer.className = "mapContainer";
 
-
         // Add the dimmer
         this._dimmer = document.createElement("div");
-        options && options.location && (this._dimmer.style.opacity = 0);
         this._dimmer.className = "dimmer";
         this._mapContainer.appendChild(this._dimmer);
 
@@ -99,52 +88,35 @@ var LocationControl = (function() {
         // Add the marker
         this._marker = document.createElement("div");
         this._marker.className = "marker";
-        this._marker.style.opacity = 1;
-        // add the marker triangle (styled with .marker div:first-child)
-        this._marker.appendChild(document.createElement("div"));
+        // add the marker triangle (styled with .marker div.triangle)
+		var triangle = document.createElement("div");
+		triangle.className = "triangle";
+		this._marker.appendChild(triangle);
         this._markerText = document.createElement("h3");
         this._markerText.className = "markerText";
-        if (options && options.locationName) {
-            this._markerText.innerText = options.locationName;
-            this._marker.style.opacity = 1;
-        }
         this._marker.appendChild(this._markerText);
+        //this._markerText.style.maxWidth = ((this.element.offsetWidth - 30) * .4) + 'px';
         mapContainer.appendChild(this._marker);
-
-        // Add the controls container
-        this._controlsContainer = document.createElement("div");
-
-        this._controlsContainer.className = "controlsContainer";
-        mapContainer.appendChild(this._controlsContainer);
 
         // Add visibility button
         var visibilityButtonContainer = document.createElement("div");
         visibilityButtonContainer.className = "visibilityButtonContainer";
         this._visibilityButton = document.createElement("button");
-        if (!(options && options.location)) {
-            this._visibilityButton.style.opacity = 0;
-            this._visibilityButton.disabled = true;
-        }
         this._visibilityButton.className = "visibilityButton";
         visibilityButtonContainer.appendChild(this._visibilityButton);
-        this._controlsContainer.appendChild(visibilityButtonContainer);
+        this._marker.appendChild(visibilityButtonContainer);
+
+        // Add the controls container
+        this._controlsContainer = document.createElement("div");
+        this._controlsContainer.className = "controlsContainer";
+        this.element.appendChild(this._controlsContainer);
 
         // Add the controls
         var controls = document.createElement("div");
         controls.className = "controls";
         this._controlsContainer.appendChild(controls);
 
-        // Add the progress indicator
-        this._progress = document.createElement("progress");
-        this._progress.style.visibility = "hidden";
-        this._progress.className = "win-ring progress";
-        controls.appendChild(this._progress);
-
-        //<h2>Where are you?</h2>
-        var controlsTitle = document.createElement("h2");
-        controlsTitle.innerText = "Where are you?";
-        controls.appendChild(controlsTitle);
-        //<p></p>
+        //<p>Please enable your location to be obtained automatically or set it yourself.</p>
         var descText = document.createElement("p");
         descText.innerText = "Please enable your location to be obtained automatically or set it yourself."
         controls.appendChild(descText);
@@ -153,71 +125,50 @@ var LocationControl = (function() {
         var toggleHost = document.createElement("div");
         this._methodToggle = new WinJS.UI.ToggleSwitch(toggleHost, { title: 'Obtain my location automatically', labelOff: 'No', labelOn: 'Yes' });
         controls.appendChild(toggleHost);
-        if (options && options.autoMethod) {
-            this._setMethodToggle(options.autoMethod);
 
-            // uncheck if geolocation permission is not enabled
-            if ((new Windows.Devices.Geolocation.Geolocator()).locationStatus == Windows.Devices.Geolocation.PositionStatus.disabled) {
-                this._setMethodToggle(false);
-            }
-        }
-
-        var manualParagraph = document.createElement("p");
+        var manualGroup = document.createElement("div");
+        manualGroup.className = "manualGroup";
         //<input placeholder="(e.g. Lahore, Pakistan)" type="text" />
         this._locationInput = document.createElement("input");
         this._locationInput.type = "text";
         this._locationInput.placeholder = "(e.g. Lahore, Pakistan)";
-        manualParagraph.appendChild(this._locationInput);
+        manualGroup.appendChild(this._locationInput);
 
         //<input type="submit" value="Set Location" />
         this._manualSubmit = document.createElement("input");
         this._manualSubmit.type = "submit";
         this._manualSubmit.value = "Set Location";
-        manualParagraph.appendChild(this._manualSubmit);
-        controls.appendChild(manualParagraph);
-
-        /* Using this code causes the application to crash
-        var wrapForm = document.createElement("form");
-        //wrapForm.appendChild(manualParagraph);
-        wrapForm.id = "wrapperForm"; // Prevents multiple forms
-        this._manualSubmit.form = "wrapperForm";
-        wrapForm.appendChild(this._locationInput);
-        wrapForm.appendChild(this._manualSubmit);
-        controls.appendChild(wrapForm);*/
+        manualGroup.appendChild(this._manualSubmit);
+        controls.appendChild(manualGroup);
 
         var manualSubmit = this._manualSubmit;
-        // If i include wrap the manualParagraph with a form, the renderer crashes
-        // when the submit button is invoked. With no form, the enter key triggers some random button press?
-        manualParagraph.addEventListener("keypress", function (event) {
-            if (event.keyCode == 13) { //Enter keycode
-                var active = document.activeElement;
-                active.blur();
+        this.element.appendChild(mapContainer);
+    }
 
-                window.inputRecentlyEntered = true;
-                setTimeout(function () {
-                    window.inputRecentlyEntered = false;
-                }, 100);
-                manualSubmit.click();
-                
-            }
-        }, true);
-
-        if (options && options.autoMethod) {
-            this._locationInput.disabled = true;
-            this._manualSubmit.disabled = true;
+    LocationControl.prototype._initControls = function (options) {
+        if (options.autoMethod) {
+            this._setMethodToggle(options.autoMethod);
         }
 
-        this.element.appendChild(mapContainer);
+        if (options.lightControls) {
+            WinJS.Utilities.addClass(this._controlsContainer, "win-ui-light");
+        }
 
-        // Lastly offset the controls container appropriately
-        if (options && options.location)
-            this._controlsContainer.style.top = (this._mapContainer.clientHeight - this._controlsContainer.offsetTop) + "px";
-        
-        var that = this;
-        msSetImmediate(function () {
-            WinJS.Utilities.addClass(that._controlsContainer, "animatable")
-        });
-    }
+	    if (options.location) {
+	        this.location = options.location;
+
+	        if (options.locationName)
+	            this.locationName = options.locationName;
+	        else
+	            this.locationName = this._latLonToString(this.location.latitude, this.location.longitude);
+
+	        this.setControlsVisibility(false);
+            this._setMarker(true, this.locationName)
+	    } else {
+	        this.setControlsVisibility(true);
+	        this._setMarker(false);
+	    }
+	}
 
     LocationControl.prototype._attachEvents = function (options) {
         /// <summary>Attaches relevant events to all the objects in the control.</summary>
@@ -252,25 +203,13 @@ var LocationControl = (function() {
             });
         });
 
-        this._visibilityButton.addEventListener("click", function showControls() {
-            that.setControlsVisibility.call(that, true);
+        this._marker.addEventListener("click", function () {
+            that._setMarker(false);
+            that.setControlsVisibility(true);
         });
 
         this._methodToggle.addEventListener("change", function () {
             that._setMethodToggle(that._methodToggle.checked);
-
-            if (that._methodToggle.checked) {
-                that._locationInput.disabled = true;
-                that._manualSubmit.disabled = true;
-
-                that._setLocationAutoAsync();
-            } else {
-                if (that._request)
-                    that._request.cancel();
-
-                that._locationInput.disabled = false;
-                that._manualSubmit.disabled = false;
-            }
         });
 
         this._locationInput.addEventListener("click", function () {
@@ -288,22 +227,28 @@ var LocationControl = (function() {
         settings["autoMethod"] = checked;
 
         this._methodToggle.checked = checked;
+
+        if (this._methodToggle.checked) {
+            this._locationInput.disabled = true;
+            this._manualSubmit.disabled = true;
+
+            this._setLocationAutoAsync();
+        } else {
+
+            this._locationInput.disabled = false;
+            this._manualSubmit.disabled = false;
+        }
     }
 
     LocationControl.prototype.setControlsVisibility = function (visible) {
         /// <summary>Toggles the visibility of the ui elements which allow the user to manipulate the location 
         /// value of the control.</summary>   
         if (visible) {
-            this._dimmer.style.opacity = 1;
-            this._controlsContainer.style.top = "0px";
-            this._visibilityButton.style.opacity = 0;
-            this._visibilityButton.disabled = true;
+            WinJS.UI.Animation.fadeIn(this._dimmer);
+            WinJS.UI.Animation.fadeIn(this._controlsContainer);
         } else {
-            this._dimmer.style.opacity = 0;
-            if (parseFloat(this._controlsContainer.currentStyle.top) == 0)
-                this._controlsContainer.style.top = (this._mapContainer.clientHeight - this._controlsContainer.offsetTop) + "px";
-            this._visibilityButton.style.opacity = 1;
-            this._visibilityButton.disabled = false;
+            WinJS.UI.Animation.fadeOut(this._dimmer);
+            WinJS.UI.Animation.fadeOut(this._controlsContainer);
         }
 
         this._controlsVisible = visible;
@@ -314,8 +259,7 @@ var LocationControl = (function() {
 
         var that = this;
 
-        // Show progress & disable controls while we're working
-        this._progress.style.visibility = "visible";
+        // Disable controls while we're working
         this._methodToggle.disabled = true;
         this._locationInput.disabled = true;
         this._manualSubmit.disabled = true;
@@ -411,7 +355,6 @@ var LocationControl = (function() {
                 console.log(error);
             }
         ).then(function () {
-            that._progress.style.visibility = "hidden";
             that._methodToggle.disabled = false;
             that._locationInput.disabled = false;
             that._manualSubmit.disabled = false;
@@ -425,8 +368,6 @@ var LocationControl = (function() {
 
         var that = this;
 
-        this._progress.style.visibility = "visible";
-
         var autoLocationAttemptCompleteCallback;
         var autoLocationPromise = new WinJS.Promise(function (complete, error, progress) {
             autoLocationAttemptCompleteCallback = complete;
@@ -434,7 +375,7 @@ var LocationControl = (function() {
 
         // Make a Geolocation request
         var geolocator = new Windows.Devices.Geolocation.Geolocator();
-        this._request = geolocator.getGeopositionAsync().then(
+        geolocator.getGeopositionAsync().then(
             function (location) {
                 // Successful geolocation
                 var locationObject = { latitude: location.coordinate.latitude, longitude: location.coordinate.longitude };
@@ -507,10 +448,6 @@ var LocationControl = (function() {
                 that._manualSubmit.disabled = false;
 
                 autoLocationAttemptCompleteCallback(false);
-            }).then(function() {
-                that._progress.style.visibility = "hidden";
-
-                that._request = null;
             });
 
         // This enables us to subscribe to the user disabling the location permission
@@ -556,6 +493,9 @@ var LocationControl = (function() {
 
         var completePromise;
 
+        // -1 * x because moving left requires a position background offset
+        var newX = -1 * x + neutralHorizontalOffset, newY = y + neutralVerticalOffset;
+
         if (animate) {
             // Scale the transition duration so long translations happen at roughly the same speed as short translations
 
@@ -563,7 +503,9 @@ var LocationControl = (function() {
             var cx = parseFloat(this._mapContainer.currentStyle.backgroundPositionX),
                 cy = parseFloat(this._mapContainer.currentStyle.backgroundPositionY);
 
-            var translationDistance = (cx + x) * (cx + x) + (cy - y) * (cy - y); // Squared distance
+            
+
+            var translationDistance = (cx - newX) * (cx - newX) + (cy - newY) * (cy - newY); // Squared distance
 
             // Squared distance, actually (mapWidth / 2)^2 + (mapHeight / 4)^2. mapWidth / 2 is used because
             // the max horizontal translation will always be less than mapWidth / 2, and since the continents occupy roughly
@@ -579,8 +521,8 @@ var LocationControl = (function() {
             completePromise = WinJS.Promise.wrap(null);
         }
 
-        this._mapContainer.style.backgroundPositionX = (-1 * x + neutralHorizontalOffset) + "px"; // -1 * x because moving left requires a position background offset
-        this._mapContainer.style.backgroundPositionY = (y + neutralVerticalOffset) + "px";
+        this._mapContainer.style.backgroundPositionX = newX + "px"; 
+        this._mapContainer.style.backgroundPositionY = newY + "px";
 
         return completePromise;
     }
@@ -596,9 +538,11 @@ var LocationControl = (function() {
             // Using visibility makes it so the marker is immediately hidden, but fades into visible
             this._marker.style.visibility = "visible"; 
             this._marker.style.opacity = 1;
+            this._marker.style.zIndex = 2;
         } else {
             this._marker.style.visibility = "hidden";
             this._marker.style.opacity = 0;
+            this._marker.style.zIndex = 0;
         }
     }
 

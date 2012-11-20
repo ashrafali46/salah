@@ -90,22 +90,20 @@
             appCommands.append(settingsFlyoutCommand);
 
             var privacyCommand = new AppSettings.SettingsCommand("privacy", "Privacy Policy", function () {
-                var uri = new Windows.Foundation.Uri("https://sites.google.com/site/salahprivacypolicy/");
-                Windows.System.Launcher.launchUriAsync(uri);
+                WinJS.UI.SettingsFlyout.showSettings("privacyPolicyFlyout", "/pages/privacypolicyflyout.html");
             });
             appCommands.append(privacyCommand);
         });
     }
 
     function loadSalah() {
-        if (view == ApplicationViews.salah)
-            return;
-
         view = ApplicationViews.salah;
 
         WinJS.Utilities.empty(contentHost);
         return WinJS.UI.Pages.render("/pages/salah.html", contentHost);
     }
+
+    window.loadSalah = loadSalah;
 
     function loadSettings() {
         if (view == ApplicationViews.settings)

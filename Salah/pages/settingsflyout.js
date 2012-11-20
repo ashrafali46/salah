@@ -1,11 +1,4 @@
-﻿//// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF 
-//// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO 
-//// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A 
-//// PARTICULAR PURPOSE. 
-//// 
-//// Copyright (c) Microsoft Corporation. All rights reserved 
-
-(function () {
+﻿(function () {
     "use strict";
 
     var page = WinJS.UI.Pages.define("/pages/settingsflyout.html", {
@@ -14,10 +7,19 @@
             element.appendChild(loadResult);
             element.style.visibility = "hidden";
 
+            // WinJS.UI.SettingsFlyout adds some styles to the flyout that we don't want
+            this.addEventListener("beforeshow", function () {
+                var content = element.querySelector(".win-content");
+                if (WinJS.Utilities.hasClass(content, "win-ui-light")) {
+                    WinJS.Utilities.removeClass(content, "win-ui-light");
+                }
+            });
+
             var locationOptions = {
                 location: ApplicationSettings.location.coord,
                 locationName: ApplicationSettings.location.name,
-                autoMethod: ApplicationSettings.location.automatic
+                autoMethod: ApplicationSettings.location.automatic,
+                lightControls: true
             };
 
             var that = this;
@@ -31,12 +33,22 @@
                 });
             });
 
-            console.log(WinJS.Utilities.hasClass(element, "win-ui-light"));
-
             return locationControlReadyPromise;
         },
 
         ready: function (element, options) {
+            var that = this;
+
+            this.locationControl.addEventListener("locationset", function (event) {
+                ApplicationSettings.location.coord = event.detail.location;
+                ApplicationSettings.location.name = event.detail.locationName;
+
+                that.salahSettingsChangeHandler();
+            });
+        },
+
+        salahSettingsChangeHandler: function () {
+            window.loadSalah();
         }
     });
 })();

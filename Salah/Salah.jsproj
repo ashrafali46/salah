@@ -102,6 +102,7 @@
     <Content Include="js\ApplicationSettings.js" />
     <Content Include="js\BackgroundControls.js" />
     <Content Include="js\LocationControl.js" />
+    <Content Include="pages\privacypolicyflyout.html" />
     <Content Include="pages\salah.js" />
     <Content Include="pages\settingsflyout.html" />
     <Content Include="pages\settingsflyout.js" />
@@ -120,7 +121,6 @@
     <Content Include="css\default.css" />
     <Content Include="js\moment.js" />
     <Content Include="js\PrayerCalculator.js" />
-    <Content Include="pages\salah-debug.js" />
     <Content Include="pages\salah.css" />
     <Content Include="pages\settings.js" />
     <None Include="Salah_TemporaryKey.pfx" />
