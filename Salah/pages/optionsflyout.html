@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html> 
+<html> 
+    <head> 
+        <title>Salah Settings Flyout</title>
+
+        <link rel="stylesheet" href="/css/LocationControl.css" />
+
+        <script src="/js/ApplicationSettings.js"></script>
+        <script src="/js/LocationControl.js"></script>
+        <script src="optionsflyout.js"></script>
+        
+        <style type="text/css">
+            .optionsSettingsFlyout {
+                border-left: 1px solid #004808;
+            }
+            
+            .optionsSettingsFlyout .win-header {
+                /*background-image: url("/images/backgrounds/pattern.png"); 
+                background-repeat: repeat;
+                background-position: center;
+                background-size: 200px 346px;*/
+                background-color: #005a0b;               
+            }
+
+            #locationControlHost {
+                height: 325px;
+                margin-top: 5px;
+                width: 566px; /* Settings flyout is 646px wide (and win-settings-sections have 40px left padding) */
+            }
+
+            .win-settings-section h2 {
+                font-size: 16pt;
+                font-weight: 300;
+                line-height: 1.2; /* 32px when font-size is 20pt */
+                padding-bottom: 10px;
+            }
+        </style>
+    </head> 
+    <body>
+        <div class="optionsSettingsFlyout" data-win-control="WinJS.UI.SettingsFlyout" aria-label="Options settings flyout" data-win-options="{settingsCommandId:'optionsFlyout',width:'wide'}"> 
+            <div class="win-header">
+               <button type="button" onclick="WinJS.UI.SettingsFlyout.show()" class="win-backbutton"></button> 
+               <div class="win-label">Options</div>
+               <img src="../images/smalllogo.png" style="position: absolute; right: 40px;"/> 
+            </div>
+            <div class="win-content"> 
+                <div class="win-settings-section">
+                    <h2 class="win-ui-light">Location</h2>
+                    <div id="locationControlHost"></div>
+                </div>
+
+                <div class="win-settings-section win-ui-light">
+                    <h2>Background</h2>
+                </div>
+
+                <div class="win-settings-section win-ui-light">
+                    <h2>Salah</h2>
+                    <label>Methodology used to calculate salah times</label>
+                    <select>
+                        <option>Islamic Society of North America</option>
+                        <option>Muslim World League</option>
+                        <option>University of Islamic Sciences, Karachi</option>
+                    </select>
+
+                    <label>Number of days to display</label>
+                    <select>
+                        <option>1 (recommended)</option>
+                        <option>7</option>
+                        <option>Unlimited</option>
+                    </select>
+
+                    <div data-win-control="WinJS.UI.ToggleSwitch" data-win-options="{title:'Show expired salah'}"></div>
+                </div> 
+
+                <div class="win-settings-section win-ui-light">
+                    <h2>Notifications</h2>
+                    <p>Salah notifications are <span id="notificationStatusText" class="win-type-large">disabled</span>.
+                         Go to the Permissions section of the Settings charm to enable notifications.</p>           
+                </div>
+            </div> 
+        </div>
+    </body>
+</html> 
