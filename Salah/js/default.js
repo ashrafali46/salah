@@ -73,19 +73,9 @@
         settingsPane.addEventListener("commandsrequested", function(event) {
             var appCommands = event.detail[0].request.applicationCommands;
 
-            var settingsCommand = new AppSettings.SettingsCommand("settings", "Settings", function () {
-                WinJS.UI.Animation.exitPage(contentHost.winControl.enterContentAnimationElements).done(function () {
-                    contentHost.style.visibility = "hidden";
-                    loadSettings().then(function () {
-                        contentHost.style.visibility = "visible";
-                        WinJS.UI.Animation.enterPage(contentHost.winControl.enterContentAnimationElements);
-                    });
-                });
-            });
-            appCommands.append(settingsCommand);
-
-            var settingsFlyoutCommand = new AppSettings.SettingsCommand("settingsFlyout", "Settings Flyout", function() {
-                WinJS.UI.SettingsFlyout.showSettings("settingsFlyout", "/pages/settingsflyout.html");
+            // according to guidelines for app settings, Options is the name that should be used for a generic settings category
+            var settingsFlyoutCommand = new AppSettings.SettingsCommand("optionsFlyout", "Options", function () {
+                WinJS.UI.SettingsFlyout.showSettings("optionsFlyout", "/pages/optionsflyout.html");
             });
             appCommands.append(settingsFlyoutCommand);
 

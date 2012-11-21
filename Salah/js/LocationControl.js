@@ -87,6 +87,7 @@ var LocationControl = (function() {
 
         // Add the marker
         this._marker = document.createElement("div");
+        this._marker.style.visibility = "hidden";
         this._marker.className = "marker";
         // add the marker triangle (styled with .marker div.triangle)
 		var triangle = document.createElement("div");
@@ -118,7 +119,7 @@ var LocationControl = (function() {
 
         //<p>Please enable your location to be obtained automatically or set it yourself.</p>
         var descText = document.createElement("p");
-        descText.innerText = "Please enable your location to be obtained automatically or set it yourself."
+        descText.innerText = "Enable your location to be obtained automatically or set it yourself."
         controls.appendChild(descText);
 
         //<div data-win-control="WinJS.UI.ToggleSwitch"></div>
@@ -195,6 +196,7 @@ var LocationControl = (function() {
             
                 // Give a small timeout so the background image won't pop in
                 setTimeout(function () {
+                    that._marker.style.visibility = "visible";
                     that.element.style.visibility = "visible";
                     var readyEvent = document.createEvent("CustomEvent");
                     readyEvent.initCustomEvent("ready", true, false, {});
@@ -535,12 +537,12 @@ var LocationControl = (function() {
         if (visible) {
             if (markerText)
                 this._markerText.innerText = markerText;
-            // Using visibility makes it so the marker is immediately hidden, but fades into visible
-            this._marker.style.visibility = "visible"; 
+            // Using display so the marker is immediately hidden, but fades into visible
+            this._marker.style.display = "-ms-flexbox";
             this._marker.style.opacity = 1;
             this._marker.style.zIndex = 2;
         } else {
-            this._marker.style.visibility = "hidden";
+            this._marker.style.display = "none";
             this._marker.style.opacity = 0;
             this._marker.style.zIndex = 0;
         }

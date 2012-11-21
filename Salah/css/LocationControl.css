@@ -56,9 +56,14 @@
 	margin-top: 0;
 }
 
+.locationControl .manualGroup {
+    display: -ms-flexbox;
+    -ms-flex-direction: row;
+    -ms-flex-align: center;
+}
+
 .locationControl .manualGroup input[type=text] {
-	margin-right: 10px !important; /* win-settingsflyout alters some styles */
-    margin-bottom: 0 !important;
+    margin: 0 10px 0 0 !important; /* win-settingsflyout alters some styles */
 }
 
 .locationControl .marker {

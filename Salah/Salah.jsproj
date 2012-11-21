@@ -104,8 +104,8 @@
     <Content Include="js\LocationControl.js" />
     <Content Include="pages\privacypolicyflyout.html" />
     <Content Include="pages\salah.js" />
-    <Content Include="pages\settingsflyout.html" />
-    <Content Include="pages\settingsflyout.js" />
+    <Content Include="pages\optionsflyout.html" />
+    <Content Include="pages\optionsflyout.js" />
     <None Include="Salah_StoreKey.pfx" />
     <None Include="Package.StoreAssociation.xml" />
     <Content Include="js\UpdateScheduler.js" />
