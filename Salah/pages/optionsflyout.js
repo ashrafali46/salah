@@ -6,7 +6,7 @@
             /// <summary>Sets up the ui of the settings page</summary>
             element.appendChild(loadResult);
             element.style.visibility = "hidden";
-
+            
             // WinJS.UI.SettingsFlyout adds some styles to the flyout that we don't want
             this.addEventListener("beforeshow", function () {
                 var content = element.querySelector(".win-content");
@@ -42,13 +42,14 @@
             this.locationControl.addEventListener("locationset", function (event) {
                 ApplicationSettings.location.coord = event.detail.location;
                 ApplicationSettings.location.name = event.detail.locationName;
-
-                that.salahSettingsChangeHandler();
+                that._dispatchSettingsChangedEvent();
             });
         },
 
-        salahSettingsChangeHandler: function () {
-            window.loadSalah();
+        _dispatchSettingsChangedEvent: function() {
+            var settingsEvent = document.createEvent("CustomEvent");
+            settingsEvent.initCustomEvent("settingschange", true, false, {});
+            this.element.querySelector(".win-settingsflyout").dispatchEvent(settingsEvent);
         }
     });
 })();

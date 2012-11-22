@@ -3,53 +3,7 @@
 (function () {
     "use strict";
 
-    var contentHost;
-    var delayPromises = [], teardownPromise;
-    var ApplicationViews = { settings: "settings", salah: "salah" };
-    
-    // Location is undefined iff app is being run for the first time, we always want to go directly to app
-    // settings if it ever is
-    var view = null,
-        initialView = (ApplicationSettings.location.coord === undefined) ? ApplicationViews.settings : ApplicationViews.salah;
-
-    WinJS.Utilities.ready(function () {
-        contentHost = document.getElementById("contentHost");
-
-        // Set the page background
-        if (ApplicationSettings.background && ApplicationSettings.background.indexOf("pattern") == -1) {
-            var backgroundLoaderImage = document.createElement("img");
-
-            var loadCallback;
-            var backgroundLoadPromise = new WinJS.Promise(function (c) { loadCallback = c });
-            backgroundLoaderImage.addEventListener("load", function () {
-                var backgroundEl = document.getElementById("background");
-                backgroundEl.style.backgroundImage = "url('" + backgroundLoaderImage.src + "')";
-                backgroundLoaderImage = null;
-                setTimeout(loadCallback, 50); // A tiny delay to prevent the background from popping in
-            });
-
-            backgroundLoaderImage.src = "/images/backgrounds/" + ApplicationSettings.background;
-            delayPromises.push(backgroundLoadPromise);
-        }
-
-        switch (initialView) {
-            case ApplicationViews.salah:
-                delayPromises.push(loadSalah());
-                break;
-            case ApplicationViews.settings:
-                delayPromises.push(loadSettings());
-                break;
-        }
-
-        contentHost.style.visibility = "hidden";
-        teardownPromise = WinJS.Promise.join(delayPromises);
-        teardownPromise.then(function () {
-            // Animate the content (using an enterPage animation) after the splash screen has been torn down
-            contentHost.style.visibility = "visible";
-            var animationElements = contentHost.winControl.enterContentAnimationElements;
-            WinJS.UI.Animation.enterPage(animationElements);
-        });
-    }, false);
+    var oldHideAllFlyouts = WinJS.UI._Overlay._hideAllFlyouts.bind(null), oldHideIfLostFocus = WinJS.UI._Overlay._hideIfLostFocus.bind(null);
 
     var app = WinJS.Application;
     app.addEventListener("activated", activatedHandler);
@@ -62,7 +16,66 @@
         var activation = Windows.ApplicationModel.Activation;
         if (eventArgs.detail.kind == activation.ActivationKind.launch && eventArgs.detail.previousExecutionState != activation.ApplicationExecutionState.running) {
             // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
-            eventArgs.setPromise(teardownPromise);
+            var splash = eventArgs.detail.splashScreen;
+            ExtendedSplash.show(splash).then(function () {
+                showFlyout("optionsFlyout");
+            });
+            //eventArgs.setPromise(teardownPromise);
+        }
+    }
+
+    function showFlyout(flyoutCommandId) {
+        var flyoutURL;
+        switch (flyoutCommandId) {
+            case "optionsFlyout":
+                flyoutURL = "/pages/optionsflyout.html";
+                break;
+            case "privacyPolicyFlyout":
+                flyoutURL = "/pages/privacypolicyflyout.html";
+                break;
+        }
+
+        WinJS.UI.SettingsFlyout.showSettings(flyoutCommandId, flyoutURL);
+
+        if (flyoutCommandId == "optionsFlyout" && true) {
+            WinJS.UI._Overlay._hideAllFlyouts = function () { };
+            WinJS.UI._Overlay._hideIfLostFocus = function () { };
+            flyoutAddedCheck();
+        }
+
+        function flyoutAddedCheck() {
+            var flyouts = document.querySelectorAll('div[data-win-control="WinJS.UI.SettingsFlyout"]');
+            var len = flyouts.length, found = false;;
+            for (var i = 0; i < len; i++) {
+                var settingsFlyout = flyouts[i].winControl;
+                if (settingsFlyout && settingsFlyout.settingsCommandId == "optionsFlyout") {
+                    found = true;
+
+                    var optionsFlyout = settingsFlyout;
+
+                    optionsFlyout.addEventListener("beforehide", function () {
+                        WinJS.UI._Overlay._hideAllFlyouts = oldHideAllFlyouts;
+                        WinJS.UI._Overlay._hideIfLostFocus = oldHideIfLostFocus;
+                    });
+
+                    optionsFlyout.addEventListener("settingschange", function () {
+                        var contentHost = document.getElementById("contentHost");
+                        if (!setupNeeded()) {
+                            WinJS.Utilities.empty(contentHost);
+                            contentHost.style.opacity = 0;
+                            WinJS.UI.Pages.render("/pages/salah.html", contentHost).then(function () {
+                                ExtendedSplash.remove();
+                                WinJS.UI.Animation.enterPage([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
+                            });
+                        }
+                    });
+
+                    break;
+                }
+            }
+
+            if (!found)
+                setTimeout(flyoutAddedCheck, 50);
         }
     }
 
@@ -70,44 +83,25 @@
         var AppSettings = Windows.UI.ApplicationSettings;
         var settingsPane = AppSettings.SettingsPane.getForCurrentView();
 
-        settingsPane.addEventListener("commandsrequested", function(event) {
+        settingsPane.addEventListener("commandsrequested", function (event) {
             var appCommands = event.detail[0].request.applicationCommands;
 
             // according to guidelines for app settings, Options is the name that should be used for a generic settings category
             var settingsFlyoutCommand = new AppSettings.SettingsCommand("optionsFlyout", "Options", function () {
-                WinJS.UI.SettingsFlyout.showSettings("optionsFlyout", "/pages/optionsflyout.html");
+                showFlyout("optionsFlyout");
             });
             appCommands.append(settingsFlyoutCommand);
 
-            var privacyCommand = new AppSettings.SettingsCommand("privacy", "Privacy Policy", function () {
-                WinJS.UI.SettingsFlyout.showSettings("privacyPolicyFlyout", "/pages/privacypolicyflyout.html");
+            var privacyCommand = new AppSettings.SettingsCommand("privacyPolicyFlyout", "Privacy Policy", function () {
+                showFlyout("privacyPolicyFlyout");
             });
             appCommands.append(privacyCommand);
         });
     }
 
-    function loadSalah() {
-        view = ApplicationViews.salah;
-
-        WinJS.Utilities.empty(contentHost);
-        return WinJS.UI.Pages.render("/pages/salah.html", contentHost);
-    }
-
-    window.loadSalah = loadSalah;
-
-    function loadSettings() {
-        if (view == ApplicationViews.settings)
-            return;
-
-        view = ApplicationViews.settings;
-
-        WinJS.Utilities.empty(contentHost);
-        return WinJS.UI.Pages.render("/pages/settings.html", contentHost);
-    }
-
     var visibilityUpdateTimeout;
     function visibilityHandler() {
-        if (view == ApplicationViews.salah) {
+        /*if (view == ApplicationViews.salah) {
             if (document.hidden) {
                 clearTimeout(visibilityUpdateTimeout);
                 contentHost.winControl.stopUpdating()
@@ -117,6 +111,10 @@
                     contentHost.winControl.startUpdating();
                 }, 600)
             }
-        }
+        }*/
+    }
+
+    function setupNeeded() {
+        return (ApplicationSettings.location.coord === undefined);
     }
 })();

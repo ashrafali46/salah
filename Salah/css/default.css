@@ -1,8 +1,9 @@
 ﻿body {
-    background-image: url("/images/backgrounds/pattern.png");
+    /*background-image: url("/images/backgrounds/pattern.png");
     background-repeat: repeat;
     background-position: center;
-    background-size: 200px 346px;
+    background-size: 200px 346px;*/
+    background-color: #005a0b;
 }
 
 #background {
@@ -14,4 +15,61 @@
     top: 0px;
     width: 100%;
     z-index: -1;
+}
+
+/* Extended splash */
+.extendedSplashScreen {
+    background-color:#005a0b;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    text-align: center;
+}
+
+.extendedSplashScreen.hidden {
+    display: none;
+}
+
+#extendedSplashImageDiv {
+    background-image: url("/images/splashscreen.png");
+    background-size: 620px 300px;
+    position: absolute;
+}
+
+#extendedSplashImage {
+    position: absolute;
+}
+
+#extendedSplashDescription
+{
+    position: absolute;
+    width: 100%;
+    top: calc(100% - 220px);
+    text-align: center;
+}
+
+#extendedSplashProgress {
+    margin-bottom: 10px;
+}
+
+#extendedSplashText
+{
+    font-family: 'Segoe UI Semilight';
+    font-size: 11pt;
+    text-align: center;
+    width: 75%;
+    margin: 0 auto;
+    color: #ffffff;
+}
+
+.bismillah {
+    font-family: "Arabic Typesetting"; 
+    font-size: 36pt;
+    margin: 0;
+}
+
+#extendedSplashIndeterminate {
+    width: 100%;
 }

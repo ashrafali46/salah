@@ -4,8 +4,6 @@
     "use strict";
 
     WinJS.UI.Pages.define("/pages/salah.html", {
-        enterContentAnimationElements: null,
-
         /// To show only todays salah: removeExpiredSalah - false, futureDayDisplayCount: 0
         /// To show unlimited upcoming salah: removeExpiredSalah - true, futureDayDisplayCount: Number.POSITIVE_INFINITY
         _options: {
@@ -35,9 +33,6 @@
 
             this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods.ISNA);
             this._datesList = element.querySelector("#datesList");
-            
-            // Set the enterPage animatable elements
-            this.enterContentAnimationElements = [element.querySelector(".header"), this._datesList];
 
             // Set the locationName from settings
             element.querySelector("#locationName").innerText = ApplicationSettings.location.name;

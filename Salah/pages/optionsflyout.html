@@ -39,8 +39,8 @@
     <body>
         <div class="optionsSettingsFlyout" data-win-control="WinJS.UI.SettingsFlyout" aria-label="Options settings flyout" data-win-options="{settingsCommandId:'optionsFlyout',width:'wide'}"> 
             <div class="win-header">
-               <button type="button" onclick="WinJS.UI.SettingsFlyout.show()" class="win-backbutton"></button> 
-               <div class="win-label">Options</div>
+               <button id="optionsFlyoutHideButton" type="button" onclick="WinJS.UI.SettingsFlyout.show()" class="win-backbutton"></button> 
+               <div id="optionsFlyoutHeaderLabel" class="win-label">Options</div>
                <img src="../images/smalllogo.png" style="position: absolute; right: 40px;"/> 
             </div>
             <div class="win-content"> 
