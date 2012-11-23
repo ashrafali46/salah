@@ -161,3 +161,11 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+
+# Custom additions
+Salah/AppPackages/
+Salah/Package.StoreAssociation.xml
+Salah/Salah_StoreKey.pfx
+Salah/images/backgrounds/pattern.svg
+appcertification.xml
+tesselation.svg

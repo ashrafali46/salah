@@ -1,0 +1,49 @@
+﻿.backgroundSelector {
+}
+
+.backgroundControl img {
+    position: absolute;
+	z-index: -3;
+}
+
+.backgroundControl img.lastCurrent {
+    opacity: 0;
+    z-index: -2;
+}
+
+.backgroundControl img.current {
+    z-index: -1;
+}
+
+.backgroundSelector .selected {
+	background: blue;
+	display: block;
+	margin-bottom: 15px;
+	width: 100%;
+}
+
+.backgroundSelector .choice {
+    display: block;
+	margin-right: 15px;
+	width: calc(20% - 12px);
+	overflow: hidden;
+}
+
+.backgroundSelector .choicesList {
+	display: -ms-flexbox;	
+}
+
+.backgroundSelector .choice .highlight {
+	background: rgba(255, 255, 255, 0.15);
+	height: 100%;
+	width: 100%;
+	visibility: hidden;
+}
+
+.backgroundSelector .choice:hover .highlight {
+	visibility: visible;
+}
+
+.backgroundSelector .choice:active .highlight {
+	visibility: hidden;
+}
