@@ -211,7 +211,7 @@
     }
 
     function locationUnsuccessful(error) {
-        var locationMsg = new Windows.UI.Popups.MessageDialog("Oops. There was an error in determining your location, please check Salah's Options.");
+        var locationMsg = new Windows.UI.Popups.MessageDialog("Oops. There was an error in determining your location, please check Salah's options.");
 
         // Add commands and set their command handlers
         locationMsg.commands.append(new Windows.UI.Popups.UICommand("View Options", function () {
