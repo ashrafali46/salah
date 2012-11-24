@@ -31,7 +31,7 @@
 
             element.appendChild(loadResult);
 
-            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods.ISNA);
+            this._prayerCalculator = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]);
             this._datesList = element.querySelector("#datesList");
 
             // Set the locationName from settings
@@ -85,9 +85,13 @@
             }, 1000);
         },
 
-        startUpdating: function () {
-            console.log("Started updating.");
+        unload: function() {
+            window.removeEventListener("resize", this._viewStateHandler);
+            //this._datesList.removeEventListener("scroll", this._scrollHandler);
+            this.stopUpdating();
+        },
 
+        startUpdating: function () {
             // Register the update method
             var that = this, SLOW_UPDATE_DELAY = 60000, FAST_UPDATE_DELAY = 5000;
             this._updating = true;
@@ -113,7 +117,6 @@
                         updateTime = SLOW_UPDATE_DELAY;
                     }
 
-                    console.log("Updating in: " + updateTime);
                     if (that._updating)
                         that._updater = setTimeout(_updateRecursive, updateTime);
                 });
@@ -122,17 +125,10 @@
 
         stopUpdating: function () {
             if (this._updating) {
-                console.log("Stopped updating.");
                 this._updating = false;
                 clearTimeout(this._updater);
                 this._updater = null;
             }
-        },
-
-        unload: function () {
-            window.removeEventListener("resize", this._viewStateHandler);
-            this._datesList.removeEventListener("scroll", this._scrollHandler);
-            clearInterval(this._updateInterval);
         },
 
         addDate: function (date) {
@@ -292,7 +288,11 @@
             function checkNeedToFill() {
                 var emptyList = (datesList.querySelector(".date") == null);
                 var needFutureDaysDisplayed = (lastDay.diff(dateToday, "days") < that._options.futureDayDisplayCount);
-                var userScrolledToListEnd = (datesList["scroll" + sizeDirection] - datesList["offset" + sizeDirection] - datesList["scroll" + positionDirection] < THRESHOLD);
+                var userScrolledToListEnd;
+                if (datesList.offsetHeight == 0 || datesList.offsetWidth == 0)
+                    userScrolledToListEnd = false;
+                else
+                    userScrolledToListEnd = (datesList["scroll" + sizeDirection] - datesList["offset" + sizeDirection] - datesList["scroll" + positionDirection] < THRESHOLD);
                 return emptyList || (userScrolledToListEnd && needFutureDaysDisplayed);
             }
         },

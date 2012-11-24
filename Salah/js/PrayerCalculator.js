@@ -7,16 +7,19 @@ var PrayerCalculator = (function () {
     }
     PrayerCalculator.Methods = {
         ISNA: {
+            name: "Islamic Society of North America",
             fajrAngle: -15,
             maghribAngle: -0.833,
             ishaAngle: -15
         },
         Karachi: {
+            name: "University of Islamic Sciences, Karachi",
             fajrAngle: -18,
             maghribAngle: -0.833,
             ishaAngle: -18
         },
         MuslimWorldLeague: {
+            name: "Muslim World League",
             fajrAngle: -18,
             maghribAngle: -0.833,
             ishaAngle: -17
@@ -77,6 +80,12 @@ var PrayerCalculator = (function () {
     PrayerCalculator.prototype._getTimezone = function () {
         var minuteDiff = (new Date()).getTimezoneOffset();
         return -1 * minuteDiff / 60;
+    };
+    PrayerCalculator.prototype.setMethod = function (method) {
+        this.parameters = method;
+    };
+    PrayerCalculator.prototype.setLocation = function (location) {
+        this.location = location;
     };
     return PrayerCalculator;
 })();

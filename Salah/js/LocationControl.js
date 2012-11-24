@@ -20,7 +20,7 @@ var LocationControl = (function() {
 
         /// <field name='controlHost' type='HTMLElement'>The element hosting the control.</field>
         /// <field name='title' type='String'>The title of the LocationControl.</field>
-        /// <field name='location' type='Windows.Devices.Geolocation.Geoposition'>The location of the control.</field>
+        /// <field name='location' type='Object'>The location of the control.</field>
         /// <field name='locationName' type='String'>The display name of the location (which is displayed by the marker).</field>
 
         /// <field name='_mapImage' type='HTMLImageElement'>An image of the controls map background.</field>
@@ -461,6 +461,8 @@ var LocationControl = (function() {
                 that._setMethodToggle(false);
             }
         });
+
+        return autoLocationPromise;
     }
 
     LocationControl.prototype._dispatchLocationSet = function (location, locationName) {

@@ -115,8 +115,6 @@ UpdateScheduler = (function () {
         this.notifier.getScheduledToastNotifications().forEach(function (notification) {
             this.notifier.removeFromSchedule(notification);
         }, this);
-
-        LocalSettings.values["notificationExpiry"] = null;
     }
 
     return UpdateScheduler;

@@ -25,6 +25,13 @@
       <ApplicationContentUriRules>
         <Rule Match="http://*.mapquestapi.com" Type="include" />
       </ApplicationContentUriRules>
+      <Extensions>
+        <Extension Category="windows.backgroundTasks" StartPage="js\sysEventBackgroundWorker.js">
+          <BackgroundTasks>
+            <Task Type="systemEvent" />
+          </BackgroundTasks>
+        </Extension>
+      </Extensions>
     </Application>
   </Applications>
   <Capabilities>

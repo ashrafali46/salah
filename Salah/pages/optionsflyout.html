@@ -6,10 +6,12 @@
         <link rel="stylesheet" href="/css/LocationControl.css" />
         <link rel="stylesheet" href="/css/BackgroundControls.css" />
 
+        <script src="/js/PrayerCalculator.js"></script>
         <script src="/js/ApplicationSettings.js"></script>
         <script src="/js/LocationControl.js"></script>
         <script src="/js/BackgroundControls.js"></script>
-        <script src="backgroundChoices.js"></script>
+        <script src="/js/backgroundChoices.js"></script>
+        <script src="/js/UpdateScheduler.js"></script>
         <script src="optionsflyout.js"></script>
         
         <style type="text/css">
@@ -72,26 +74,24 @@
                 <div class="win-settings-section win-ui-light">
                     <h2>Salah</h2>
                     <label>Methodology used to calculate salah times</label>
-                    <select>
-                        <option>Islamic Society of North America</option>
-                        <option>Muslim World League</option>
-                        <option>University of Islamic Sciences, Karachi</option>
+                    <select id="salahMethodSelect">
+                        <!-- dynamically populated -->
                     </select>
 
                     <label>Number of days to display</label>
-                    <select>
-                        <option>1 (recommended)</option>
-                        <option>7</option>
-                        <option>Unlimited</option>
+                    <select id="salahDayDisplaySelect">
+                        <option value="1">1 (recommended)</option>
+                        <option value="7">7</option>
+                        <option value="Infinity">Unlimited</option>
                     </select>
 
-                    <div data-win-control="WinJS.UI.ToggleSwitch" data-win-options="{title:'Show expired salah'}"></div>
+                    <div id="salahExpiredDisplayToggle" data-win-control="WinJS.UI.ToggleSwitch" data-win-options="{title:'Show expired salah'}"></div>
                 </div> 
 
                 <div class="win-settings-section win-ui-light">
                     <h2>Notifications</h2>
                     <p>Salah notifications are <span id="notificationStatusText" class="win-type-large">disabled</span>.
-                         Go to the Permissions section of the Settings charm to enable notifications.</p>           
+                         <span id="notificationEnableInstruction" style="display: none;">Go to the Permissions section of the Settings charm to enable notifications.</span></p>           
                 </div>
             </div> 
         </div>

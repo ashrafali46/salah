@@ -1,4 +1,4 @@
-﻿// No dependencies
+﻿// Depends on PrayerCalculator
 
 var ApplicationSettings = (function () {
     var LocalSettingsValues = Windows.Storage.ApplicationData.current.localSettings.values;
@@ -6,7 +6,21 @@ var ApplicationSettings = (function () {
     var locationCoordSettingId = "locationCoordinate",
         locationNameSettingId = "locationName",
         locationAutomaticSettingId = "locationAutomatic",
-        backgroundSettingId = "background";
+        backgroundSettingId = "backgroundId",
+        runCountId = "runCount",
+        salahMethodSettingId = "salahMethod",
+        salahDisplayExpiredSettingId = "salahDisplayExpired",
+        salahDayDisplayNumberSettingId = "salahDayDisplayNumber";
+
+    WinJS.Application.addEventListener("activated", function () {
+        var runCount = LocalSettingsValues[runCountId];
+        if (runCount === undefined) {
+            LocalSettingsValues[runCountId] = 1;
+        } else {
+            runCount++;
+            LocalSettingsValues[runCountId] = runCount;
+        }
+    });
 
     function ApplicationSettings() {
         var locationObject = new Object();
@@ -47,7 +61,7 @@ var ApplicationSettings = (function () {
             automatic: {
                 enumerable: true,
                 get: function () {
-                    return LocalSettingsValues[locationAutomaticSettingId] || false;
+                    return LocalSettingsValues[locationAutomaticSettingId];
                 },
                 set: function (autoMethod) {
                     LocalSettingsValues[locationAutomaticSettingId] = autoMethod;
@@ -55,19 +69,74 @@ var ApplicationSettings = (function () {
             },
         });
 
+        var salahObject = new Object();
+        Object.defineProperties(salahObject, {
+            method: {
+                enumerable: true,
+                get: function () {
+                    return LocalSettingsValues[salahMethodSettingId];
+                },
+                set: function (methodParam) {
+                    if (methodParam instanceof Object) {
+                        var keyName;
+                        for (var key in PrayerCalculator.Methods) {
+                            if (methodParam == PrayerCalculator.Methods[key]) {
+                                keyName = key;
+                                break;
+                            }
+                        }
+                        LocalSettingsValues[salahMethodSettingId] = keyName;
+                    } else {
+                        LocalSettingsValues[salahMethodSettingId] = methodParam;
+                    }
+                }
+            },
+
+            displayExpired: {
+                enumerable: true,
+                get: function () {
+                    return LocalSettingsValues[salahDisplayExpiredSettingId];
+                },
+                set: function (display) {
+                    LocalSettingsValues[salahDisplayExpiredSettingId] = display;
+                }
+            },
+
+            dayDisplayNumber: {
+                enumerable: true,
+                get: function () {
+                    return LocalSettingsValues[salahDayDisplayNumberSettingId];
+                },
+                set: function (numberOfDaysToDisplay) {
+                    LocalSettingsValues[salahDayDisplayNumberSettingId] = numberOfDaysToDisplay;
+                }
+            }
+        });
+
         Object.defineProperties(this, {
+            salah: {
+                enumerable: true,
+                writable: false,
+                value: salahObject
+            },
             location: {
                 enumerable: true,
                 writable: false,
                 value: locationObject
             },
-            background: {
+            backgroundId: {
                 enumerable: true,
                 get: function () {
                     return LocalSettingsValues[backgroundSettingId];
                 },
                 set: function (background) {
                     LocalSettingsValues[backgroundSettingId] = background;
+                }
+            },
+            firstRun: {
+                enumerable: true,
+                get: function () {
+                    return (LocalSettingsValues[runCountId] === undefined) || (LocalSettingsValues[runCountId] == 0);
                 }
             }
         });

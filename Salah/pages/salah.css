@@ -56,7 +56,9 @@ label.dateStamp {
     background-clip: content-box;
 	background-color: rgba(0, 0, 0, .9);
 	margin-right: 2px;
-    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear; /* added wipe-able transition property here */
+    /* adding wipe-able transition property here causes salah to animate when they are added to the document */
+    /*transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear;*/ 
+    transition: color .3s linear;
 }
 
 .salahList > li:last-child {
@@ -98,7 +100,7 @@ label.dateStamp {
 }
 
 .wipeable {    
-    /*transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease;*/
+    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear;
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
 }
