@@ -1,20 +1,27 @@
 ﻿/// <reference path="//Microsoft.WinJS.1.0/js/ui.js" />
 
-var Background = (function () {
-    function Background(id, title, src, location, author, authorURI) {
-        this.id = id;
+var BackgroundChoice, BackgroundControl, BackgroundSelector;
+
+BackgroundChoice = (function () {
+    function BackgroundChoice(title, imageFileName, metaData) {
+        this.id = title.toLowerCase().replace(/\s/g, ""); // id is supposed to be unique, *this does not check for duplicates*
         this.title = title;
-        this.src = src;
-        this.location = location;
-        this.author = author;
-        this.authorURI = authorURI;
+        this.imageURL = "/images/backgrounds/" + imageFileName;
+        this.thumb = "/images/backgrounds/thumbs/" + imageFileName;
+        this.metaData = metaData;
+        /* metaData:
+        {
+            location: <Location Description String>,
+            author: <Author Name String>,
+            [authorURL: <Author URL>
+        }*/
     }
 
-    return Background;
+    return BackgroundChoice;
 })();
 
 /** Smooth sets background images */
-var BackgroundControl = (function () {
+BackgroundControl = (function () {
     function BackgroundControl(element) {
         this.element = element;
         this.element.winControl = this;
@@ -128,21 +135,12 @@ var BackgroundControl = (function () {
     return BackgroundControl;
 })();
 
-var BackgroundChoice = (function () {
-    function BackgroundChoice(id, imageURL, thumb) {
-        this.id = id;
-        this.imageURL = imageURL;
-        this.thumb = thumb;
-    }
-
-    return BackgroundChoice;
-})();
-
-var BackgroundSelector = (function () {
-    var maxChoices = 5;
+BackgroundSelector = (function () {
+    var MAX_CHOICES = 5;
 
     function BackgroundSelector(element) {
         this.element = element;
+        element.winControl = this;
         WinJS.Utilities.addClass(element, "backgroundSelector");
 
         this.busy = false;
@@ -160,6 +158,20 @@ var BackgroundSelector = (function () {
         selected.appendChild(selectedBackgroundEl);
         this._backgroundControl = new BackgroundControl(selectedBackgroundEl);
 
+        // Create the background info
+        var backgroundInfo = document.createElement("div");
+        backgroundInfo.className = "info win-ui-dark";
+        this._backgroundTitleEl = document.createElement("h2");
+        backgroundInfo.appendChild(this._backgroundTitleEl);
+        this._locationInfoEl = document.createElement("h3");
+        backgroundInfo.appendChild(this._locationInfoEl);
+        var authorPara = document.createElement("p");
+        authorPara.innerText = "Photographed by ";
+        this._authorInfoEl = document.createElement("a");
+        authorPara.appendChild(this._authorInfoEl);
+        backgroundInfo.appendChild(authorPara);
+        selected.appendChild(backgroundInfo);
+
         this._choices = document.createElement("div");
         this._choices.className = "choicesList";
 
@@ -170,7 +182,7 @@ var BackgroundSelector = (function () {
     }
 
     BackgroundSelector.prototype.addChoice = function (choice) {
-        if (this._choicesArray.length == maxChoices)
+        if (this._choicesArray.length == MAX_CHOICES)
             this.removeChoice(this._choicesArray[0]);
 
         this._choicesArray.push(choice);
@@ -228,8 +240,21 @@ var BackgroundSelector = (function () {
 
         this.busy = true;
 
+        // Dispatch a background select event
+        var selectEvent = document.createEvent("CustomEvent");
+        selectEvent.initCustomEvent("change", true, false, { choice: choice });
+        this.element.dispatchEvent(selectEvent);
+
         var busyPromises = [];
         this._backgroundControl.set(choice.id, choice.imageURL);
+
+        // Set the background info
+        this._backgroundTitleEl.innerText = choice.title;
+        if (choice.metaData) {
+            this._locationInfoEl.innerText = choice.metaData.location;
+            this._authorInfoEl.innerText = choice.metaData.author;
+            this._authorInfoEl.href = choice.metaData.authorURL;
+        }
 
         busyPromises.push(this.removeChoice(choice));
         if (this.selectedChoice) {
@@ -246,6 +271,14 @@ var BackgroundSelector = (function () {
         });
 
         return true;
+    }
+
+    BackgroundSelector.prototype.addEventListener = function (type, callback, capture) {
+        this.element.addEventListener(type, callback, capture);
+    }
+
+    BackgroundSelector.prototype.removeEventListener = function (type, callback, capture) {
+        this.element.removeEventListener(type, callback, capture);
     }
 
     return BackgroundSelector;

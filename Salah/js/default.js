@@ -1,9 +1,14 @@
 ﻿/// <reference path="ApplicationSettings.js" />
 
+
 (function () {
     "use strict";
 
-    var oldHideAllFlyouts = WinJS.UI._Overlay._hideAllFlyouts.bind(null), oldHideIfLostFocus = WinJS.UI._Overlay._hideIfLostFocus.bind(null);
+    var salahBackgroundControl;
+
+    WinJS.Utilities.ready(function () {
+        salahBackgroundControl = new BackgroundControl(document.getElementById("backgroundControlHost"));
+    }, false);
 
     var app = WinJS.Application;
     app.addEventListener("activated", activatedHandler);
@@ -16,11 +21,6 @@
         var activation = Windows.ApplicationModel.Activation;
         if (eventArgs.detail.kind == activation.ActivationKind.launch && eventArgs.detail.previousExecutionState != activation.ApplicationExecutionState.running) {
             // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
-            var splash = eventArgs.detail.splashScreen;
-            ExtendedSplash.show(splash).then(function () {
-                showFlyout("optionsFlyout");
-            });
-            //eventArgs.setPromise(teardownPromise);
         }
     }
 
@@ -36,40 +36,22 @@
         }
 
         WinJS.UI.SettingsFlyout.showSettings(flyoutCommandId, flyoutURL);
+        var callback;
+        var flyoutAcquiredPromise = new WinJS.Promise(function (complete) {
+            callback = complete;
+        });
 
-        if (flyoutCommandId == "optionsFlyout" && true) {
-            WinJS.UI._Overlay._hideAllFlyouts = function () { };
-            WinJS.UI._Overlay._hideIfLostFocus = function () { };
-            flyoutAddedCheck();
-        }
+        msSetImmediate(flyoutAddedCheck);
+        return flyoutAcquiredPromise;
 
         function flyoutAddedCheck() {
             var flyouts = document.querySelectorAll('div[data-win-control="WinJS.UI.SettingsFlyout"]');
             var len = flyouts.length, found = false;;
             for (var i = 0; i < len; i++) {
                 var settingsFlyout = flyouts[i].winControl;
-                if (settingsFlyout && settingsFlyout.settingsCommandId == "optionsFlyout") {
+                if (settingsFlyout && settingsFlyout.settingsCommandId == flyoutCommandId) {
                     found = true;
-
-                    var optionsFlyout = settingsFlyout;
-
-                    optionsFlyout.addEventListener("beforehide", function () {
-                        WinJS.UI._Overlay._hideAllFlyouts = oldHideAllFlyouts;
-                        WinJS.UI._Overlay._hideIfLostFocus = oldHideIfLostFocus;
-                    });
-
-                    optionsFlyout.addEventListener("settingschange", function () {
-                        var contentHost = document.getElementById("contentHost");
-                        if (!setupNeeded()) {
-                            WinJS.Utilities.empty(contentHost);
-                            contentHost.style.opacity = 0;
-                            WinJS.UI.Pages.render("/pages/salah.html", contentHost).then(function () {
-                                ExtendedSplash.remove();
-                                WinJS.UI.Animation.enterPage([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
-                            });
-                        }
-                    });
-
+                    callback(settingsFlyout);
                     break;
                 }
             }
@@ -88,7 +70,13 @@
 
             // according to guidelines for app settings, Options is the name that should be used for a generic settings category
             var settingsFlyoutCommand = new AppSettings.SettingsCommand("optionsFlyout", "Options", function () {
-                showFlyout("optionsFlyout");
+                showFlyout("optionsFlyout").then(function (flyout) {
+                    var bs = flyout._element.querySelector("#backgroundSelectorHost");
+                    bs.winControl.addEventListener("change", function (event) {
+                        var choice = event.detail.choice;
+                        salahBackgroundControl.set(choice.id, choice.imageURL);
+                    });
+                });
             });
             appCommands.append(settingsFlyoutCommand);
 

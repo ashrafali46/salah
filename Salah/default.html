@@ -11,25 +11,14 @@
 
     <!-- Salah references -->
     <link href="/css/default.css" rel="stylesheet" />
+    <link href="/css/BackgroundControls.css" rel="stylesheet" />
 
-    <script src="/js/ExtendedSplash.js"></script>
+    <script src="/js/BackgroundControls.js"></script>
     <script src="/js/ApplicationSettings.js"></script>
     <script src="/js/default.js"></script>
 </head>
 <body>
-    <div id="extendedSplashScreen" class="extendedSplashScreen hidden">
-        <progress id="extendedSplashProgress" style="color: white; width: 30px; height: 30px;" class="win-ring"></progress>
-        <img id="extendedSplashImage" src="/images/splashscreen.png" style="position: absolute;" alt="Splash screen image" onload="" ondragstart="return false;"/>
-        <div id="extendedSplashDescription">
-            <br />
-            <div id="extendedSplashText">
-                <p class="bismillah" title="Bismillah">ببسم الله الرحمن الرحيم</p>
-                <p>Please take a moment to configure Salah</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="background"></div>
+    <div id="backgroundControlHost"></div>
     <div id="contentHost"></div>
 </body>
 </html>

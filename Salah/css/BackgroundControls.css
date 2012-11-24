@@ -13,15 +13,10 @@
     position: relative;
 }
 
-.backgroundControl div.lastCurrent {
-}
-
-.backgroundControl div.current {
-}
-
 .backgroundSelector .selected {
 	display: block;
 	margin-bottom: 15px;
+    position: relative; /* only needed to help place .info child */
 	width: 100%;
 }
 
@@ -58,4 +53,31 @@
 
 .backgroundSelector .choice:active .highlight {
 	visibility: hidden;
+}
+
+
+.backgroundSelector .info {
+    bottom: 15px;
+    background: rgba(0, 0, 0, .9);
+    border-radius: 2px;
+    right: 15px;
+    padding: 8px 14px;
+    position: absolute;
+    text-align: right;
+    z-index: 10;
+}
+
+.backgroundSelector .info h2 {
+    padding-bottom: 3px !important;
+}
+
+.backgroundSelector .info p {
+    opacity: .7;
+    padding-top: 3px !important;
+    padding-bottom: 2px !important;
+}
+
+.backgroundSelector .info a {
+    color: #C4ABFF;
+    padding-bottom: 0px !important;
 }

@@ -81,14 +81,14 @@
 
 .locationControl .marker div.triangle {
 	border: 15px solid transparent;
-	border-right: 15px solid black;
+	border-right: 15px solid rgba(0, 0, 0, 0.9);
 	display: block;
 	width: 0px;
 	height: 0px;
 }
 
 .locationControl .markerText {
-	background: black;
+	background: rgba(0, 0, 0, 0.9);
 	height: 20px;
 	line-height: 20px;
     overflow: hidden;
@@ -106,9 +106,9 @@
 .locationControl .visibilityButton {
     color: white;
     display: inline-block;
-	background-color: black;
+	background-color: rgba(0, 0, 0, 0.9);
 	border: none;
-	/*border-radius: 0 4px 4px 0;*/
+	border-radius: 0 2px 2px 0;
     margin: 0 !important; /* win-settingsflyout overrides some stuff... */
     min-width: 0;
     min-height: 0;
@@ -124,7 +124,7 @@
 
 .locationControl .visibilityButton:hover, .visibilityButton:hover:active {
     color: white;
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.9);
 }
 
 .locationControl .visibilityButton::before {
