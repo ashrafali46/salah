@@ -1,25 +1,33 @@
-﻿.backgroundSelector {
+﻿.backgroundControl {
+    position: relative;
 }
 
-.backgroundControl img {
+.backgroundControl div {
+    height: 100%;
     position: absolute;
-	z-index: -3;
+    overflow: hidden;
+    width: 100%;
 }
 
-.backgroundControl img.lastCurrent {
-    opacity: 0;
-    z-index: -2;
+.backgroundControl div img {
+    position: relative;
 }
 
-.backgroundControl img.current {
-    z-index: -1;
+.backgroundControl div.lastCurrent {
+}
+
+.backgroundControl div.current {
 }
 
 .backgroundSelector .selected {
-	background: blue;
 	display: block;
 	margin-bottom: 15px;
 	width: 100%;
+}
+
+.backgroundSelector .selected .backgroundControl {
+    height: 100%;
+    width: 100%;
 }
 
 .backgroundSelector .choice {
@@ -27,6 +35,10 @@
 	margin-right: 15px;
 	width: calc(20% - 12px);
 	overflow: hidden;
+}
+
+.backgroundSelector .choice:last-child {
+    margin-right: 0px;
 }
 
 .backgroundSelector .choicesList {
