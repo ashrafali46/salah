@@ -37,16 +37,24 @@ BackgroundControl = (function () {
     BackgroundControl.prototype.set = function (id, imageURL) {
         var that = this;
 
+        var bgElement = null;
         // check if this control contains that image already
-        var bgElement = this.element.querySelector("#" + id);
+        /*for (var i = 0; i < this.element.childNodes.length; i++) {
+            var childNode = this.element.childNodes[i];
+            if (WinJS.Utilities.hasClass(childNode, id)) {
+                bgElement = childNode;
+                break;
+            }
+        }*/
+        bgElement = this.element.querySelector("." + id);
         if (!bgElement) {
             bgElement = document.createElement("div");
-            bgElement.id = id;
+            bgElement.className = id;
             var imageElement = document.createElement("img");
             bgElement.appendChild(imageElement);
 
             imageElement.addEventListener("load", function () {
-                var shrinkAmount = 0.98 * Math.max(imageElement.naturalHeight / that.element.clientHeight, imageElement.naturalWidth / that.element.clientWidth);
+                var shrinkAmount = 0.99 * Math.max(imageElement.naturalHeight / that.element.clientHeight, imageElement.naturalWidth / that.element.clientWidth);
                 imageElement.width = imageElement.naturalWidth / shrinkAmount;
                 imageElement.height = imageElement.naturalHeight / shrinkAmount;
 
@@ -112,13 +120,13 @@ BackgroundControl = (function () {
             }
 
             if (that._currentBackground) {
-                var oldCurrent = that.element.querySelector("#" + that._currentBackground);
+                var oldCurrent = that.element.querySelector("." + that._currentBackground);
                 WinJS.Utilities.removeClass(oldCurrent, "current");
                 WinJS.Utilities.addClass(oldCurrent, "lastCurrent");
                 oldCurrent.style.zIndex = that._ELEMENT_ZINDEX - 1;
             }
 
-            that._currentBackground = transitionElement.id;
+            that._currentBackground = transitionElement.className;
             WinJS.Utilities.addClass(transitionElement, "current");
             transitionElement.style.zIndex = that._ELEMENT_ZINDEX;
 

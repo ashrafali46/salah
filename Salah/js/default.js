@@ -131,8 +131,10 @@
             var bs = flyout._element.querySelector("#backgroundSelectorHost");
             bs.winControl.addEventListener("change", function (event) {
                 var choice = event.detail.choice;
-                ApplicationSettings.backgroundId = choice.id;
-                salahBackgroundControl.set(choice.id, choice.imageURL);
+                if (ApplicationSettings.backgroundId != choice.id) {
+                    ApplicationSettings.backgroundId = choice.id;
+                    salahBackgroundControl.set(choice.id, choice.imageURL);
+                }
             });
 
             flyout.addEventListener("settingschange", function (event) {

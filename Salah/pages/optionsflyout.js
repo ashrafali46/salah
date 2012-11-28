@@ -38,12 +38,17 @@
 
             // Background Selector
             this.backgroundSelector = new BackgroundSelector(element.querySelector("#backgroundSelectorHost"));
+            var choicesToAdd = [];
+            // add the currently selected background choice first, then add others
             backgroundChoices.forEach(function (choice) {
-                that.backgroundSelector.addChoice(choice);
                 if (choice.id == ApplicationSettings.backgroundId) {
+                    that.backgroundSelector.addChoice(choice);
                     that.backgroundSelector.selectChoice(choice);
+                } else {
+                    choicesToAdd.push(choice);
                 }
             });
+            choicesToAdd.forEach(this.backgroundSelector.addChoice, this.backgroundSelector);
 
             this.salahMethodSelect = element.querySelector("#salahMethodSelect");
             for (var methodKey in PrayerCalculator.Methods) {
