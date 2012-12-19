@@ -11,10 +11,11 @@
     importScripts("moment.js");
     importScripts("UpdateScheduler.js");
 
-    var updateScheduler = new UpdateScheduler();
-    if (updateScheduler.daysScheduled < 3) {
-        var pc = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]);
-        updateScheduler.schedule(pc, 3);
+    if (ApplicationSettings.location.coord && ApplicationSettings.salah.method) {
+        var updateScheduler = new UpdateScheduler();
+        if (updateScheduler.daysScheduled < updateScheduler.MIN_DAYS_SCHEDULED) {
+            updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), updateScheduler.MIN_DAYS_SCHEDULED);
+        }
     }
 
     close();

@@ -96,7 +96,7 @@
                 if (that.notificationsEnabled) {
                     that.prayerCalculator.setLocation(event.detail.location);
                     that.updateScheduler.clear();
-                    msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, 1) });
+                    msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
                 }
 
                 that._salahSettingsChanged();
@@ -112,7 +112,7 @@
                 if (that.notificationsEnabled) {
                     that.prayerCalculator.setMethod(PrayerCalculator.Methods[ApplicationSettings.salah.method]);
                     that.updateScheduler.clear();
-                    msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, 1) });
+                    msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
                 }
 
                 that._salahSettingsChanged();

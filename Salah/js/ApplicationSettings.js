@@ -12,15 +12,18 @@ var ApplicationSettings = (function () {
         salahDisplayExpiredSettingId = "salahDisplayExpired",
         salahDayDisplayNumberSettingId = "salahDayDisplayNumber";
 
-    WinJS.Application.addEventListener("activated", function () {
-        var runCount = LocalSettingsValues[runCountId];
-        if (runCount === undefined) {
-            LocalSettingsValues[runCountId] = 1;
-        } else {
-            runCount++;
-            LocalSettingsValues[runCountId] = runCount;
-        }
-    });
+    // WinJS is not referenced when executing background task (workaround by checking for window.document
+    if (location.pathname.indexOf("BackgroundWorker") == -1) {
+        WinJS.Application.addEventListener("activated", function () {
+            var runCount = LocalSettingsValues[runCountId];
+            if (runCount === undefined) {
+                LocalSettingsValues[runCountId] = 1;
+            } else {
+                runCount++;
+                LocalSettingsValues[runCountId] = runCount;
+            }
+        });
+    }
 
     function ApplicationSettings() {
         var locationObject = new Object();

@@ -41,13 +41,24 @@
                         });
 
                         // Schedule some updates
-                        (new UpdateScheduler()).schedule(
-                            new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), 3);
+                        msSetImmediate(function () {
+                            var updateScheduler = new UpdateScheduler();
+                            updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), updateScheduler.MIN_DAYS_SCHEDULED);
+                        });
                     } else {
                         locationUnsuccessful();
                     }
                 });
             });
+
+            // Register the background maintenance task
+            var builder = new Windows.ApplicationModel.Background.BackgroundTaskBuilder();
+            builder.name = "Salah Update Maintenance Task";
+            builder.taskEntryPoint = "js\\sysEventBackgroundWorker.js";
+            // Run every 8 hours if the device is on AC power
+            var trigger = new Windows.ApplicationModel.Background.MaintenanceTrigger(480, false);
+            builder.setTrigger(trigger);
+            var task = builder.register();
         } else {
             if (ApplicationSettings.location.coord === undefined) {
                 splashDismissedPromise.then(function () { locationUnsuccessful() });
@@ -59,6 +70,14 @@
                         WinJS.UI.Animation.enterPage([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
                         contentHost.style.visibility = "visible";
                     });
+                });
+
+                // Schedule some updates if necessary
+                msSetImmediate(function () {
+                    var updateScheduler = new UpdateScheduler()
+                    if (updateScheduler.daysScheduled < updateScheduler.MIN_DAYS_SCHEDULED) {
+                        updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), 1);
+                    }
                 });
             }
         }

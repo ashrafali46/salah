@@ -3,6 +3,7 @@
     margin-left: 120px;
 	position: absolute;
 	top: 0;
+    text-shadow: 0px 0px 2.5px rgba(0, 0, 0, .3);
 }
 
 #datesListContainer {
@@ -50,6 +51,7 @@ label.dateStamp {
     font-weight: 600;
     line-height: 1.3636;
 	padding-bottom: 7px;
+    text-shadow: 0px 0px 1.5px rgba(0, 0, 0, .65);
 }
 
 .salahList > li {
@@ -57,7 +59,7 @@ label.dateStamp {
 	background-color: rgba(0, 0, 0, .9);
 	margin-right: 2px;
     /* adding wipe-able transition property here causes salah to animate when they are added to the document */
-    /*transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear;*/ 
+    /*transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear;*/
     transition: color .3s linear;
 }
 
@@ -100,7 +102,7 @@ label.dateStamp {
 }
 
 .wipeable {    
-    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear;
+    transition: margin-right .7s ease, padding 1.4s ease, width 1.4s ease, color .3s linear !important;
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
 }

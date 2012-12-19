@@ -72,7 +72,7 @@
                 var viewStates = Windows.UI.ViewManagement.ApplicationViewState;
                 var newViewState = Windows.UI.ViewManagement.ApplicationView.value;
                 if (newViewState === viewStates.snapped) {
-                    that._viewstate = "vertical";
+                    that._viewstate = "horizontal";//that._viewstate = "vertical";
                 } else {
                     that._viewstate = "horizontal";
                 }

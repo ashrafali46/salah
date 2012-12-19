@@ -21,6 +21,11 @@ UpdateScheduler = (function () {
                 settingsValues["lastDateScheduled"] = moment().add('d', numberOfDays).toDate();
             }
         });
+
+        Object.defineProperty(this, "MIN_DAYS_SCHEDULED", {
+            writeable: false,
+            value: 3
+        });
     }
 
     UpdateScheduler.prototype.schedule = function (prayerCalculator, daysToSchedule) {
