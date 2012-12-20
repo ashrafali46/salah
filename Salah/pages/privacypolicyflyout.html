@@ -3,16 +3,29 @@
     <head>
         <title></title>
         <style type="text/css">
-            .privacypolicyflyout .win-settings-section a {
+             .privacypolicyFlyout {
+                border-left: 1px solid #ccc;
+            }
+
+            .privacypolicyFlyout .win-header {
+                position: relative;
+                left: -1px;
+                padding-left: 41px;
+                background-color: #005a0b;
+                border-left: 1px solid #004808;
+                width: 647px;
+            }
+
+            .privacypolicyFlyout .win-settings-section a {
                 padding-bottom: 0 !important;
             }
 
-            .privacypolicyflyout .win-settings-section div.footnotes p {
+            .privacypolicyFlyout .win-settings-section div.footnotes p {
                 color: #222;
                 padding-bottom: 8px !important;
             }
 
-            .privacypolicyflyout .win-settings-section div.footnotes:before {
+            .privacypolicyFlyout .win-settings-section div.footnotes:before {
                 border-top: 1px solid #AAA;
                 height: 10px;
                 content: "";
@@ -20,7 +33,7 @@
                 width: 25%;
             }
 
-            .privacypolicyflyout .win-settings-section sup {
+            .privacypolicyFlyout .win-settings-section sup {
                 line-height: 0;
                 position: relative;
                 vertical-align: baseline;
@@ -29,9 +42,8 @@
         </style>
     </head>
     <body> 
-        <div data-win-control="WinJS.UI.SettingsFlyout" class="privacypolicyflyout" style="border-left: 1px solid #004808;" aria-label="Privacy Policy settings flyout" data-win-options="{settingsCommandId:'privacyPolicyFlyout',width:'narrow'}">
-            <!-- Use either 'win-ui-light' or 'win-ui-dark' depending on the contrast between the header title and background color -->
-            <div class="win-header" style="background-color:#005a0b"> <!-- Background color reflects app's personality -->
+        <div data-win-control="WinJS.UI.SettingsFlyout" class="privacypolicyFlyout" aria-label="Privacy Policy settings flyout" data-win-options="{settingsCommandId:'privacyPolicyFlyout',width:'narrow'}">
+            <div class="win-header">
                 <button type="button" onclick="WinJS.UI.SettingsFlyout.show()" class="win-backbutton"></button>
                 <div class="win-label">Privacy Policy</div>
             </div>
@@ -44,10 +56,10 @@
                     <p>If you use automatic location or provide a city name as your location, Salah discloses this information
                          anonymously to a geocoding web service to provide a better app experience.<sup>1, 2</sup> If you do not want
                          your location sent to the web service, you can opt-out by disabling automatic location and entering a 
-                        <code>latitude, longitude</code> coordinate pair (e.g. <code>31.57, 74.32</code>) as your location in Salah’s options. 
+                        <code>latitude, longitude</code> coordinate pair (e.g. <code>31.57, 74.32</code>) as your location in Salah&rsquo;s options. 
                         
                         <p>When your location has been determined (via automatic location or manual entry) it is stored
-                           on your computer in the app's settings.</p>
+                           on your computer in the app&rsquo;s settings.</p>
                     </p>
 
                     <div class="footnotes"><p><sup>1</sup> The geocoding service is provided courtesy of <a href="http://www.mapquest.com/">MapQuest</a>, 

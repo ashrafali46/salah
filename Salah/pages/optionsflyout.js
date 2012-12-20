@@ -93,12 +93,8 @@
                 ApplicationSettings.location.coord = event.detail.location;
                 ApplicationSettings.location.name = event.detail.locationName;
 
-                if (that.notificationsEnabled) {
-                    that.prayerCalculator.setLocation(event.detail.location);
-                    that.updateScheduler.clear();
-                    msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
-                }
-
+                that.prayerCalculator.setLocation(ApplicationSettings.location.coord);
+                that._setNotifications();
                 that._salahSettingsChanged();
             });
 
@@ -109,11 +105,8 @@
             this.salahMethodSelect.addEventListener("change", function (event) {
                 ApplicationSettings.salah.method = event.target.value;
 
-                if (that.notificationsEnabled) {
-                    that.prayerCalculator.setMethod(PrayerCalculator.Methods[ApplicationSettings.salah.method]);
-                    that.updateScheduler.clear();
-                    msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
-                }
+                if (ApplicationSettings.location.coord)
+                    that._setNotifications();
 
                 that._salahSettingsChanged();
             });
@@ -135,6 +128,15 @@
             var settingsEvent = document.createEvent("CustomEvent");
             settingsEvent.initCustomEvent("settingschange", true, false, {});
             this.element.querySelector(".win-settingsflyout").dispatchEvent(settingsEvent);
+        },
+
+        _setNotifications: function () {
+            var that = this;
+            if (this.notificationsEnabled) {
+                this.prayerCalculator.setMethod(PrayerCalculator.Methods[ApplicationSettings.salah.method]);
+                this.updateScheduler.clear();
+                msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
+            }
         }
     });
 })();

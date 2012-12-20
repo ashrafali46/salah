@@ -6,23 +6,29 @@ var PrayerCalculator = (function () {
         this.parameters = parameters;
     }
     PrayerCalculator.Methods = {
+        EgyptGeneralAuthority: {
+            name: "Egyptian General Authority of Survey",
+            fajrAngle: -19.5,
+            maghribAngle: -0.833,
+            ishaAngle: -17.5
+        },
         ISNA: {
             name: "Islamic Society of North America",
             fajrAngle: -15,
             maghribAngle: -0.833,
             ishaAngle: -15
         },
-        Karachi: {
-            name: "University of Islamic Sciences, Karachi",
-            fajrAngle: -18,
-            maghribAngle: -0.833,
-            ishaAngle: -18
-        },
         MuslimWorldLeague: {
             name: "Muslim World League",
             fajrAngle: -18,
             maghribAngle: -0.833,
             ishaAngle: -17
+        },
+        Karachi: {
+            name: "University of Islamic Sciences, Karachi",
+            fajrAngle: -18,
+            maghribAngle: -0.833,
+            ishaAngle: -18
         }
     };
     PrayerCalculator.prototype.calculateTimes = function (date) {

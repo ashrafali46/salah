@@ -157,20 +157,22 @@
             });
 
             flyout.addEventListener("settingschange", function (event) {
-                if (salahLoaded) {
-                    WinJS.UI.Animation.exitContent([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]).then(function () {
+                if (ApplicationSettings.location.coord) {
+                    if (salahLoaded) {
+                        WinJS.UI.Animation.exitContent([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]).then(function () {
+                            contentHost.style.visibility = "hidden";
+                            loadSalah().then(function () {
+                                WinJS.UI.Animation.enterContent([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
+                                contentHost.style.visibility = "visible";
+                            });
+                        });
+                    } else {
                         contentHost.style.visibility = "hidden";
                         loadSalah().then(function () {
-                            WinJS.UI.Animation.enterContent([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
+                            WinJS.UI.Animation.enterPage([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
                             contentHost.style.visibility = "visible";
                         });
-                    });
-                } else {
-                    contentHost.style.visibility = "hidden";
-                    loadSalah().then(function () {
-                        WinJS.UI.Animation.enterPage([contentHost.querySelector(".header"), contentHost.querySelector("#datesList")]);
-                        contentHost.style.visibility = "visible";
-                    });
+                    }
                 }
             });
         });
@@ -232,7 +234,7 @@
     }
 
     function locationUnsuccessful(error) {
-        var locationMsg = new Windows.UI.Popups.MessageDialog("Oops. There was an error in determining your location, please check Salah's options.");
+        var locationMsg = new Windows.UI.Popups.MessageDialog("Oops. There was an error in determining your location, please check Salah\u2019s options.");
 
         // Add commands and set their command handlers
         locationMsg.commands.append(new Windows.UI.Popups.UICommand("View Options", function () {

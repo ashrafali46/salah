@@ -115,7 +115,9 @@ UpdateScheduler = (function () {
 
     UpdateScheduler.prototype.clear = function () {
         this.daysScheduled = 0;
-        this.updater.clear();
+        this.updater.getScheduledTileNotifications().forEach(function (update) {
+            this.updater.removeFromSchedule(update);
+        }, this);
         
         this.notifier.getScheduledToastNotifications().forEach(function (notification) {
             this.notifier.removeFromSchedule(notification);
