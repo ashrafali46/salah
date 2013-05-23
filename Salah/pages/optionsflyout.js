@@ -68,20 +68,21 @@
             this.salahExpiredDisplayToggle = element.querySelector("#salahExpiredDisplayToggle");
             // winControls initialized after render method
 
-            // Check if notifications are enabled
-            var Notifications = Windows.UI.Notifications
-            var notifier = Notifications.ToastNotificationManager.createToastNotifier();
-            this.notificationsEnabled = (notifier.setting == Notifications.NotificationSetting.enabled);
-            this.updateScheduler = new UpdateScheduler();
-            if (this.notificationsEnabled) {
-                element.querySelector("#notificationStatusText").innerText = "enabled";
-                this.prayerCalculator = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method])
-            } else {
-                element.querySelector("#notificationStatusText").innerText = "disabled";
-                element.querySelector("#notificationEnableInstruction").style.display = "inline";
-                this.updateScheduler.clear();
+            try {
+                // Check if notifications are enabled
+                this.updateScheduler = new UpdateScheduler();
+                if (this.updateScheduler.toastsEnabled()) {
+                    element.querySelector("#notificationStatusText").innerText = "enabled";
+                } else {
+                    element.querySelector("#notificationStatusText").innerText = "disabled";
+                    element.querySelector("#notificationEnableInstruction").style.display = "inline";
+                }
+            } catch (error) {
+                this.updateScheduler = null;
+                element.querySelector("#notificationStatusText").parentNode.innerText = "An error occured in the notification system. (" + error.message + ")";
             }
 
+            this.prayerCalculator = new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method])
 
             return locationControlReadyPromise;
         },
@@ -89,33 +90,40 @@
         ready: function (element, options) {
             var that = this;
 
+            // User changes their location:
             this.locationControl.addEventListener("locationset", function (event) {
                 ApplicationSettings.location.coord = event.detail.location;
                 ApplicationSettings.location.name = event.detail.locationName;
 
                 that.prayerCalculator.setLocation(ApplicationSettings.location.coord);
-                that._setNotifications();
+                that._createUpdates();
                 that._salahSettingsChanged();
             });
 
+            // User changes the prayer calculation method:
+            this.salahMethodSelect.addEventListener("change", function (event) {
+                ApplicationSettings.salah.method = event.target.value;
+                that.prayerCalculator.setMethod(PrayerCalculator.Methods[ApplicationSettings.salah.method]);
+
+                if (ApplicationSettings.location.coord)
+                    that._createUpdates();
+
+                that._salahSettingsChanged();
+            });
+
+            // User changes the app background:
             /*this.backgroundSelector.addEventListener("change", function (event) {
+                // Nothing needs to be done!
                 console.log(event.detail.choice.title + " background chosen");
             });*/
 
-            this.salahMethodSelect.addEventListener("change", function (event) {
-                ApplicationSettings.salah.method = event.target.value;
-
-                if (ApplicationSettings.location.coord)
-                    that._setNotifications();
-
-                that._salahSettingsChanged();
-            });
-
+            // User changes the number of days salah are displayed for:
             this.salahDayDisplaySelect.addEventListener("change", function (event) {
                 ApplicationSettings.salah.dayDisplayNumber = parseFloat(event.target.value);
                 that._salahSettingsChanged();
             });
 
+            // User sets the win-toggle that controls whether expired salah are displayed:
             this.salahExpiredDisplayToggle.winControl.checked = ApplicationSettings.salah.displayExpired;
             this.salahExpiredDisplayToggle.addEventListener("change", function (event) {
                 ApplicationSettings.salah.displayExpired = event.target.winControl.checked;
@@ -124,19 +132,20 @@
         },
 
         _salahSettingsChanged: function () {
-            // dispatch a settings changed event
+            // dispatch a settings changed event on myself
             var settingsEvent = document.createEvent("CustomEvent");
             settingsEvent.initCustomEvent("settingschange", true, false, {});
             this.element.querySelector(".win-settingsflyout").dispatchEvent(settingsEvent);
         },
 
-        _setNotifications: function () {
+        _createUpdates: function () {
             var that = this;
-            if (this.notificationsEnabled) {
-                this.prayerCalculator.setMethod(PrayerCalculator.Methods[ApplicationSettings.salah.method]);
-                this.updateScheduler.clear();
-                msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
-            }
+
+            if (!this.updateScheduler)
+                return;
+
+            this.updateScheduler.clear();
+            msSetImmediate(function () { that.updateScheduler.schedule(that.prayerCalculator, that.updateScheduler.MIN_DAYS_SCHEDULED) });
         }
     });
 })();

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-  <Identity Name="62034Bayvakoof.Salah" Version="1.0.0.7" Publisher="CN=34FDEA86-1BFE-41CB-A0AA-1CD4DF894240" />
+  <Identity Name="62034Bayvakoof.Salah" Version="1.0.0.10" Publisher="CN=34FDEA86-1BFE-41CB-A0AA-1CD4DF894240" />
   <Properties>
     <DisplayName>Salah</DisplayName>
     <PublisherDisplayName>Bayvakoof</PublisherDisplayName>

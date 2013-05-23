@@ -4,8 +4,17 @@
 UpdateScheduler = (function () {
     var Notifications = Windows.UI.Notifications;
     function UpdateScheduler() {
-        this.updater = Notifications.TileUpdateManager.createTileUpdaterForApplication();
-        this.notifier = Notifications.ToastNotificationManager.createToastNotifier();
+        try {
+            // On rare occasions, the app will throw a javascript exception here:
+            // "The notification platform is unavailable."
+            // (COM Error Codes: WPN_E_PLATFORM_UNAVAILABLE 0x803E0105) 
+
+            this.updater = Notifications.TileUpdateManager.createTileUpdaterForApplication();
+            this.notifier = Notifications.ToastNotificationManager.createToastNotifier();
+        } catch (error) {
+            console.log(error);
+            throw error; // Propagate the error.
+        }
 
         var settingsValues = Windows.Storage.ApplicationData.current.localSettings.values;
         Object.defineProperty(this, "daysScheduled", {
@@ -89,7 +98,7 @@ UpdateScheduler = (function () {
             scheduledNotification.expirationTime = expirationTime;
             this.updater.addToSchedule(scheduledNotification);
         } catch (error) {
-            // catch any errors in case the deliveryTime is borked.
+            // catch any errors in case the deliveryTime is borked (i.e. less than current time).
             console.log(error);
         }
     }
@@ -122,6 +131,11 @@ UpdateScheduler = (function () {
         this.notifier.getScheduledToastNotifications().forEach(function (notification) {
             this.notifier.removeFromSchedule(notification);
         }, this);
+    }
+
+    UpdateScheduler.prototype.toastsEnabled = function () {
+        var toastNotificationsEnabled = (this.notifier.setting == Notifications.NotificationSetting.enabled);
+        return toastNotificationsEnabled;
     }
 
     return UpdateScheduler;

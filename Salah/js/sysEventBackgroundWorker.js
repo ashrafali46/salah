@@ -12,9 +12,13 @@
     importScripts("UpdateScheduler.js");
 
     if (ApplicationSettings.location.coord && ApplicationSettings.salah.method) {
-        var updateScheduler = new UpdateScheduler();
-        if (updateScheduler.daysScheduled < updateScheduler.MIN_DAYS_SCHEDULED) {
-            updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), updateScheduler.MIN_DAYS_SCHEDULED);
+        try {
+            var updateScheduler = new UpdateScheduler();
+            if (updateScheduler.daysScheduled < updateScheduler.MIN_DAYS_SCHEDULED) {
+                updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), updateScheduler.MIN_DAYS_SCHEDULED);
+            }
+        } catch (error) {
+            console.log("error");
         }
     }
 

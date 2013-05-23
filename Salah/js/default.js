@@ -40,11 +40,7 @@
                             contentHost.style.visibility = "visible";
                         });
 
-                        // Schedule some updates
-                        msSetImmediate(function () {
-                            var updateScheduler = new UpdateScheduler();
-                            updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), updateScheduler.MIN_DAYS_SCHEDULED);
-                        });
+                        scheduleUpdatesImmediate();
                     } else {
                         locationUnsuccessful();
                     }
@@ -72,13 +68,7 @@
                     });
                 });
 
-                // Schedule some updates if necessary
-                msSetImmediate(function () {
-                    var updateScheduler = new UpdateScheduler()
-                    if (updateScheduler.daysScheduled < updateScheduler.MIN_DAYS_SCHEDULED) {
-                        updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), 1);
-                    }
-                });
+                scheduleUpdatesImmediate();
             }
         }
 
@@ -104,7 +94,7 @@
             // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
             eventArgs.setPromise(WinJS.Promise.join(teardownPromises));
 
-            eventArgs.detail.splashScreen.addEventListener("dismissed", splashCallback);
+			eventArgs.detail.splashScreen.addEventListener("dismissed", splashCallback);
         }
     }
 
@@ -242,5 +232,19 @@
         }));
 
         locationMsg.showAsync();
+    }
+    
+    function scheduleUpdatesImmediate() {
+        // Schedule some updates if necessary
+        msSetImmediate(function () {
+            try {
+                var updateScheduler = new UpdateScheduler()
+                if (updateScheduler.daysScheduled < updateScheduler.MIN_DAYS_SCHEDULED) {
+                    updateScheduler.schedule(new PrayerCalculator(ApplicationSettings.location.coord, PrayerCalculator.Methods[ApplicationSettings.salah.method]), 1);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        });
     }
 })();

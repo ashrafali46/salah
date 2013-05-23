@@ -46,8 +46,8 @@
     <TargetPlatformVersion>8.0</TargetPlatformVersion>
     <DefaultLanguage>en-US</DefaultLanguage>
     <PackageCertificateKeyFile>Salah_StoreKey.pfx</PackageCertificateKeyFile>
-    <PackageCertificateThumbprint>46E6DF060DE209ADBA17D0C3765FEF9905AF5BDD</PackageCertificateThumbprint>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <PackageCertificateThumbprint>A5125ECF2839B8FABF1C4AF0D66D4ABFD719CF02</PackageCertificateThumbprint>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
   </PropertyGroup>
   <ItemGroup>
     <AppxManifest Include="package.appxmanifest">
@@ -103,12 +103,13 @@
     <Content Include="js\BackgroundControls.js" />
     <Content Include="js\sysEventBackgroundWorker.js" />
     <Content Include="js\LocationControl.js" />
+    <None Include="Salah_StoreKey.pfx" />
+    <None Include="Salah_TemporaryKey.pfx" />
+    <None Include="Package.StoreAssociation.xml" />
     <Content Include="pages\privacypolicyflyout.html" />
     <Content Include="pages\salah.js" />
     <Content Include="pages\optionsflyout.html" />
     <Content Include="pages\optionsflyout.js" />
-    <None Include="Salah_StoreKey.pfx" />
-    <None Include="Package.StoreAssociation.xml" />
     <Content Include="js\UpdateScheduler.js" />
     <Content Include="pages\salah.html" />
     <Content Include="images\logo.scale-100.png" />
@@ -120,7 +121,6 @@
     <Content Include="js\moment.js" />
     <Content Include="js\PrayerCalculator.js" />
     <Content Include="pages\salah.css" />
-    <None Include="Salah_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="Microsoft.WinJS.1.0, Version=1.0" />
