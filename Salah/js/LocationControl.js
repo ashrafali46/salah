@@ -288,7 +288,6 @@ var LocationControl = (function() {
             });
         } else {
             // Geocode the input, the mapquestapi assumes america unless a country is supplied (we can parse the input for a country, but nominatim is good for now)
-            //var geocodeRequestURI = "http://www.mapquestapi.com/geocoding/v1/address?key=Fmjtd%7Cluuanu0r29%2Cax%3Do5-96b5gu&location=" + encodeURIComponent(locationEntry) + "&thumbMaps=false";
             var geocodeRequestURI = "http://open.mapquestapi.com/nominatim/v1/search?q=" + encodeURIComponent(locationEntry) + "&format=json&addressdetails=1";
             var xhrPromise = WinJS.xhr({ url: geocodeRequestURI, headers: { "User-Agent": userAgent } });
 
@@ -396,9 +395,7 @@ var LocationControl = (function() {
 
                 // Try to geocode the location to get the location name
                 // Use mapquest reverse geo!
-                /*var geocodeRequestURI = "http://open.mapquestapi.com/nominatim/v1/reverse?format=json&lat=" + location.coordinate.latitude +
-                    "&lon=" + location.coordinate.longitude + "&zoom=10&addressdetails=1";*/
-                var geocodeRequestURI = "http://www.mapquestapi.com/geocoding/v1/reverse?key=Fmjtd%7Cluuanu0r29%2Cax%3Do5-96b5gu" +
+                var geocodeRequestURI = "http://www.mapquestapi.com/geocoding/v1/reverse?key=XNOTHINGXTOXSEEXHEREXMOVEXALONGXNOWX" +
                     "&lat=" + location.coordinate.latitude + "&lng=" + location.coordinate.longitude;
                 var geocodeXhr = WinJS.xhr({ url: geocodeRequestURI, headers: { "User-Agent": userAgent } });
                 WinJS.Promise.timeout(XHR_TIMEOUT, geocodeXhr).then(

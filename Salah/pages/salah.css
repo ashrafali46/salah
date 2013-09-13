@@ -106,3 +106,7 @@ label.dateStamp {
 	overflow: hidden;
 	white-space: nowrap; /* Very important as it prevents text from wrapping */
 }
+
+@media screen and (-ms-view-state: snapped) {
+
+}

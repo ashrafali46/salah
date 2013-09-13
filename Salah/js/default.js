@@ -94,7 +94,7 @@
             // When we launch the app from any state other than running (notRunning, suspended, terminated, closedByUser)
             eventArgs.setPromise(WinJS.Promise.join(teardownPromises));
 
-			eventArgs.detail.splashScreen.addEventListener("dismissed", splashCallback);
+            eventArgs.detail.splashScreen.addEventListener("dismissed", splashCallback);
         }
     }
 
